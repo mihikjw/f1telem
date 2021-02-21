@@ -11,7 +11,7 @@
 
 namespace F1Telem {
 
-constexpr int UDP_BUFFER_SIZE = 1350;
+constexpr int UDP_BUFFER_SIZE = 1464;
 
 class UDPReader : public Reader {
     public:
