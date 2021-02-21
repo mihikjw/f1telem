@@ -24,7 +24,7 @@ set_target_properties(libf1telem PROPERTIES LINKER_LANGUAGE CXX)
 
 # ---------------------------------
 # EXECUTABLES
-# sealvm
+# testapp
 file(GLOB TESTAPP_SRC "${CMAKE_BINARY_DIR}/cmd/testapp.cpp")
 add_executable(testapp ${TESTAPP_SRC})
 target_link_libraries(testapp libf1telem)
