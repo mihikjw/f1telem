@@ -28,6 +28,7 @@ int main() {
     F1Telem::Decoder decoder;
     F1Telem::PacketHeader header;
     F1Telem::PacketMotionData motionPacket;
+    F1Telem::PacketSessionData sessionPacket;
 
     while ((bytes = reader.Read(buffer)) > 0) {
         if (!buffer) {
@@ -44,9 +45,8 @@ int main() {
                 break;
             }
             case F1Telem::SESSION: {
-                std::printf("Packet Decode Not Implemented\n");
-                decoder.ResetByteCount();
-                continue;
+                decoder.DecodePacketSessionData(buffer, &header, &sessionPacket);
+                break;
             }
             case F1Telem::LAP_DATA: {
                 std::printf("Packet Decode Not Implemented\n");

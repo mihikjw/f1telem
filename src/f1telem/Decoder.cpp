@@ -205,3 +205,118 @@ CarMotionData* Decoder::decodeCarMotionData(char* buffer) {
 
     return data;
 }
+
+bool Decoder::DecodePacketSessionData(char* buffer, PacketHeader* header, PacketSessionData* packet) {
+    if (!buffer || !header || !packet) {
+        return false;
+    }
+
+    packet->m_header = header;
+
+    // -28 (\344) in buffer, 228 (\344) after memcpy? wtffffff?
+    std::memcpy(&packet->m_weather, buffer, sizeof(packet->m_weather));
+    buffer += sizeof(packet->m_weather);
+    bytesRead += sizeof(packet->m_weather);
+    std::memcpy(&packet->m_trackTemperature, buffer, sizeof(packet->m_trackTemperature));
+    buffer += sizeof(packet->m_trackTemperature);
+    bytesRead += sizeof(packet->m_trackTemperature);
+    std::memcpy(&packet->m_airTemperature, buffer, sizeof(packet->m_airTemperature));
+    buffer += sizeof(packet->m_airTemperature);
+    bytesRead += sizeof(packet->m_airTemperature);
+
+    std::memcpy(&packet->m_totalLaps, buffer, sizeof(packet->m_totalLaps));
+    buffer += sizeof(packet->m_totalLaps);
+    bytesRead += sizeof(packet->m_totalLaps);
+    std::memcpy(&packet->m_trackLength, buffer, sizeof(packet->m_trackLength));
+    buffer += sizeof(packet->m_trackLength);
+    bytesRead += sizeof(packet->m_trackLength);
+
+    std::memcpy(&packet->m_sessionType, buffer, sizeof(packet->m_sessionType));
+    buffer += sizeof(packet->m_sessionType);
+    bytesRead += sizeof(packet->m_sessionType);
+    std::memcpy(&packet->m_trackId, buffer, sizeof(packet->m_trackId));
+    buffer += sizeof(packet->m_trackId);
+    bytesRead += sizeof(packet->m_trackId);
+    std::memcpy(&packet->m_formula, buffer, sizeof(packet->m_formula));
+    buffer += sizeof(packet->m_formula);
+    bytesRead += sizeof(packet->m_formula);
+    std::memcpy(&packet->m_sessionTimeLeft, buffer, sizeof(packet->m_sessionTimeLeft));
+    buffer += sizeof(packet->m_sessionTimeLeft);
+    bytesRead += sizeof(packet->m_sessionTimeLeft);
+    std::memcpy(&packet->m_sessionDuration, buffer, sizeof(packet->m_sessionDuration));
+    buffer += sizeof(packet->m_sessionDuration);
+    bytesRead += sizeof(packet->m_sessionDuration);
+
+    std::memcpy(&packet->m_pitSpeedLimit, buffer, sizeof(packet->m_pitSpeedLimit));
+    buffer += sizeof(packet->m_pitSpeedLimit);
+    bytesRead += sizeof(packet->m_pitSpeedLimit);
+
+    std::memcpy(&packet->m_gamePaused, buffer, sizeof(packet->m_gamePaused));
+    buffer += sizeof(packet->m_gamePaused);
+    bytesRead += sizeof(packet->m_gamePaused);
+    std::memcpy(&packet->m_isSpectating, buffer, sizeof(packet->m_isSpectating));
+    buffer += sizeof(packet->m_isSpectating);
+    bytesRead += sizeof(packet->m_isSpectating);
+    std::memcpy(&packet->m_spectatorCarIndex, buffer, sizeof(packet->m_spectatorCarIndex));
+    buffer += sizeof(packet->m_spectatorCarIndex);
+    bytesRead += sizeof(packet->m_spectatorCarIndex);
+    std::memcpy(&packet->m_sliProNativeSupport, buffer, sizeof(packet->m_sliProNativeSupport));
+    buffer += sizeof(packet->m_sliProNativeSupport);
+    bytesRead += sizeof(packet->m_sliProNativeSupport);
+
+    std::memcpy(&packet->m_numMarshalZones, buffer, sizeof(packet->m_numMarshalZones));
+    buffer += sizeof(packet->m_numMarshalZones);
+    bytesRead += sizeof(packet->m_numMarshalZones);
+
+    // might get weird data after this if all zones in array are always sent - requires testing
+    for (uint8_t i = 0; i < packet->m_numMarshalZones; i++) {
+        packet->m_marshalZones[i] = decodeMarshalZoneData(buffer);
+    }
+
+    std::memcpy(&packet->m_safetyCarStatus, buffer, sizeof(packet->m_safetyCarStatus));
+    buffer += sizeof(packet->m_safetyCarStatus);
+    bytesRead += sizeof(packet->m_safetyCarStatus);
+    std::memcpy(&packet->m_networkGame, buffer, sizeof(packet->m_networkGame));
+    buffer += sizeof(packet->m_networkGame);
+    bytesRead += sizeof(packet->m_networkGame);
+    std::memcpy(&packet->m_numWeatherForecastSamples, buffer, sizeof(packet->m_numWeatherForecastSamples));
+    buffer += sizeof(packet->m_numWeatherForecastSamples);
+    bytesRead += sizeof(packet->m_numWeatherForecastSamples);
+
+    for (uint8_t i = 0; i < packet->m_numWeatherForecastSamples; i++) {
+        packet->m_weatherForecastSamples[i] = decodeWeatherForecastSampleData(buffer);
+    }
+
+    return true;
+}
+
+MarshalZone* Decoder::decodeMarshalZoneData(char* buffer) {
+    auto data = new MarshalZone();
+    std::memcpy(&data->m_zoneStart, buffer, sizeof(data->m_zoneStart));
+    buffer += sizeof(data->m_zoneStart);
+    bytesRead += sizeof(data->m_zoneStart);
+    std::memcpy(&data->m_zoneFlag, buffer, sizeof(data->m_zoneFlag));
+    buffer += sizeof(data->m_zoneFlag);
+    bytesRead += sizeof(data->m_zoneFlag);
+    return data;
+}
+
+WeatherForecastSample* Decoder::decodeWeatherForecastSampleData(char* buffer) {
+    auto data = new WeatherForecastSample();
+    std::memcpy(&data->m_sessionType, buffer, sizeof(data->m_sessionType));
+    buffer += sizeof(data->m_sessionType);
+    bytesRead += sizeof(data->m_sessionType);
+    std::memcpy(&data->m_timeOffset, buffer, sizeof(data->m_timeOffset));
+    buffer += sizeof(data->m_timeOffset);
+    bytesRead += sizeof(data->m_timeOffset);
+    std::memcpy(&data->m_weather, buffer, sizeof(data->m_weather));
+    buffer += sizeof(data->m_weather);
+    bytesRead += sizeof(data->m_weather);
+    std::memcpy(&data->m_trackTemperature, buffer, sizeof(data->m_trackTemperature));
+    buffer += sizeof(data->m_trackTemperature);
+    bytesRead += sizeof(data->m_trackTemperature);
+    std::memcpy(&data->m_airTemperature, buffer, sizeof(data->m_airTemperature));
+    buffer += sizeof(data->m_airTemperature);
+    bytesRead += sizeof(data->m_airTemperature);
+    return data;
+}

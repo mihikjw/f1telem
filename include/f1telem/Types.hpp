@@ -48,7 +48,7 @@ PacketMotionData gives physics data for all cars being driven. There is addition
     - For the normalised vectors below, to convert to float values divide by 32767.0f – 16-bit signed values are used to pack the data and on the assumption
         that direction values are always between -1.0f and 1.0f.
     - Frequency: Rate as specified in menus
-    - Size: 1464 bytes
+    - Size: 1464 bytes (F12020)
     - Version: 1
 */
 struct CarMotionData {
@@ -90,6 +90,53 @@ struct PacketMotionData {
     float m_angularAccelerationY;
     float m_angularAccelerationZ;
     float m_frontWheelsAngle; // current front wheels angle in radians
+};
+
+/*
+PacketSessionData includes details about the current session in progress
+    - Frequency: 2 per-second
+    - Size: 251 bytes (F12020)
+    - Version: 1
+*/
+struct MarshalZone {
+    float m_zoneStart; // fraction (0..1) of way through the lap the marshal zone starts
+    int8_t m_zoneFlag; // -1 = invalid/unknown, 0 = none, 1 = green, 2 = blue, 3 = yellow, 4 = red
+};
+
+struct WeatherForecastSample {
+    uint8_t m_sessionType; // 0 = unknown, 1 = P1, 2 = P2, 3 = P3, 4 = Short P, 5 = Q1, 6 = Q2, 7 = Q3, 8 = Short Q, 9 = OSQ, 10 = R, 11 = R2, 12 = Time Trial
+    uint8_t m_timeOffset;  // time in minutes the forecast is for
+    uint8_t m_weather;     // Weather - 0 = clear, 1 = light cloud, 2 = overcast, 3 = light rain, 4 = heavy rain, 5 = storm
+    int8_t m_trackTemperature; // track temp in celcius
+    int8_t m_airTemperature;   // air temp in celcius
+};
+
+constexpr uint8_t MAX_MARSHAL_ZONES = 21;
+constexpr uint8_t MAX_WEATHER_FORECAST_SAMPLES = 20;
+
+struct PacketSessionData {
+    PacketHeader* m_header;    // header
+    uint8_t m_weather;         // Weather - 0 = clear, 1 = light cloud, 2 = overcast, 3 = light rain, 4 = heavy rain, 5 = storm
+    int8_t m_trackTemperature; // track temp in celcius
+    int8_t m_airTemperature;   // air temp in celcius
+    uint8_t m_totalLaps;       // total no. of laps in this race
+    uint16_t m_trackLength;    // track length in meters
+    uint8_t m_sessionType; // 0 = unknown, 1 = P1, 2 = P2, 3 = P3, 4 = Short P, 5 = Q1, 6 = Q2, 7 = Q3, 8 = Short Q, 9 = OSQ, 10 = R, 11 = R2, 12 = Time Trial
+    int8_t m_trackId;      // -1 for unknown, 0-21 for tracks, see tracks constants
+    uint8_t m_formula;     // 0 = F1 Modern, 1 = F1 Classic, 2 = F2, 3 = F1 Generic
+    uint16_t m_sessionTimeLeft;                                                                // time left in session in seconds
+    uint16_t m_sessionDuration;                                                                // session duration in seconds
+    uint8_t m_pitSpeedLimit;                                                                   // pit speed limit in kph
+    uint8_t m_gamePaused;                                                                      // whether the game is paused
+    uint8_t m_isSpectating;                                                                    // whether the player is spectating
+    uint8_t m_spectatorCarIndex;                                                               // index of the car being spectated
+    uint8_t m_sliProNativeSupport;                                                             // SLI pro support, 0 = inactive, 1 = active
+    uint8_t m_numMarshalZones;                                                                 // number of marshal zones to follow
+    std::array<MarshalZone*, MAX_MARSHAL_ZONES> m_marshalZones;                                // list of marshal zones
+    uint8_t m_safetyCarStatus;                                                                 // 0 = no safety car, 1 = full safety car, 2 = VSC
+    uint8_t m_networkGame;                                                                     // 0 = offline, 1 = online
+    uint8_t m_numWeatherForecastSamples;                                                       // number of weather samples to follow
+    std::array<WeatherForecastSample*, MAX_WEATHER_FORECAST_SAMPLES> m_weatherForecastSamples; // array of weather forecase samples
 };
 
 } // namespace F1Telem
