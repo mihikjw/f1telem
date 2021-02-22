@@ -22,17 +22,16 @@ int main() {
     reader.Open();
     std::printf("UDP Server Listening On Port %d\n", PORT);
 
-    F1Telem::Decoder decoder;
-
     int bytes;
     uint8_t packetID;
 
+    F1Telem::Decoder decoder;
     F1Telem::PacketHeader header;
     F1Telem::PacketMotionData motionPacket;
 
     while ((bytes = reader.Read(buffer)) > 0) {
         if (!buffer) {
-            std::printf("Buffer Failed Write\n");
+            std::printf("Buffer Failed Read\n");
             continue;
         }
 
@@ -41,50 +40,63 @@ int main() {
 
         switch (packetID) {
             case F1Telem::MOTION: {
-                if (decoder.DecodePacketMotionData(buffer, &header, &motionPacket)) {
-                    std::printf("Packet Decoded Succesfully\n");
-                }
+                decoder.DecodePacketMotionData(buffer, &header, &motionPacket);
                 break;
             }
             case F1Telem::SESSION: {
                 std::printf("Packet Decode Not Implemented\n");
-                break;
+                decoder.ResetByteCount();
+                continue;
             }
             case F1Telem::LAP_DATA: {
                 std::printf("Packet Decode Not Implemented\n");
-                break;
+                decoder.ResetByteCount();
+                continue;
             }
             case F1Telem::EVENT: {
                 std::printf("Packet Decode Not Implemented\n");
-                break;
+                decoder.ResetByteCount();
+                continue;
             }
             case F1Telem::PARTICIPANTS: {
                 std::printf("Packet Decode Not Implemented\n");
-                break;
+                decoder.ResetByteCount();
+                continue;
             }
             case F1Telem::CAR_SETUPS: {
                 std::printf("Packet Decode Not Implemented\n");
-                break;
+                decoder.ResetByteCount();
+                continue;
             }
             case F1Telem::CAR_TELEMETRY: {
                 std::printf("Packet Decode Not Implemented\n");
-                break;
+                decoder.ResetByteCount();
+                continue;
             }
             case F1Telem::CAR_STATUS: {
                 std::printf("Packet Decode Not Implemented\n");
-                break;
+                decoder.ResetByteCount();
+                continue;
             }
             case F1Telem::FINAL_CLASSIFICATION: {
                 std::printf("Packet Decode Not Implemented\n");
-                break;
+                decoder.ResetByteCount();
+                continue;
             }
             case F1Telem::LOBBY_INFO: {
                 std::printf("Packet Decode Not Implemented\n");
-                break;
+                decoder.ResetByteCount();
+                continue;
             }
             default: {
                 std::printf("Failed To Decode Packet\n");
+                decoder.ResetByteCount();
+                continue;
             }
+        }
+
+        if (!decoder.ValidateLastPacket(bytes)) {
+            std::printf("Packet Failed Validation\n");
         }
     }
 

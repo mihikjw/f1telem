@@ -16,8 +16,12 @@ class Decoder {
     uint8_t DecodePacketHeader(char* buffer, PacketHeader* header);
     bool DecodePacketMotionData(char* buffer, PacketHeader* header, PacketMotionData* packet);
 
+    bool ValidateLastPacket(int bytesRecieved);
+    void ResetByteCount();
+
     private:
     CarMotionData* decodeCarMotionData(char* buffer);
+    int bytesRead;
 };
 
 } // namespace F1Telem
