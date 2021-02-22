@@ -3,7 +3,7 @@
 
 namespace F1Telem {
 
-class Packet {
+struct Packet {
     public:
     Packet() = default;
     virtual ~Packet() = default;
@@ -11,4 +11,4 @@ class Packet {
 
 } // namespace F1Telem
 
-#endif // F1TELEM_PACKET_HPP
+#endif // F1TELEM_PACKET_HPPCAR_COUNT

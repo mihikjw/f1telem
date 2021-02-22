@@ -2,10 +2,19 @@
 #define F1TELEM_F12020_TYPES_HPP
 
 #include <cstdint>
+#include <array>
+
+/*
+    - spec: https://forums.codemasters.com/topic/50942-f1-2020-udp-specification/
+    - All values are little-endian
+    - All data packed, no padding used
+*/
 
 namespace F1Telem {
-
 namespace F12020 {
+
+// CAR_COUNT is the number of supported cars in F1 2020
+constexpr uint8_t CAR_COUNT = 22;
 
 // PacketHeader is a header sent with all packets transmitted
 struct PacketHeader {
@@ -21,21 +30,20 @@ struct PacketHeader {
     uint8_t m_secondaryPlayerCarIndex; // 255 if no split screen
 };
 
-enum PacketID {
-    Motion = 0,
-    Session,
-    LapData,
-    Event,
-    Participants,
-    CarSetups,
-    CarTelemetry,
-    CarStatus,
-    FinalClassification,
-    LobbyInfo,
-};
+// PacketID's used to identify the 'm_packetId' field in the PacketHeader
+constexpr uint8_t MOTION = 0;
+constexpr uint8_t SESSION = 1;
+constexpr uint8_t LAP_DATA = 2;
+constexpr uint8_t EVENT = 3;
+constexpr uint8_t PARTICIPANTS = 4;
+constexpr uint8_t CAR_SETUPS = 5;
+constexpr uint8_t CAR_TELEMETRY = 6;
+constexpr uint8_t CAR_STATUS = 7;
+constexpr uint8_t FINAL_CLASSIFICATION = 8;
+constexpr uint8_t LOBBY_INFO = 9;
 
 /*
-CarMotionData & PacketMotionData gives physics data for all cars being driven. There is additional data for the car being driven.
+PacketMotionData gives physics data for all cars being driven. There is additional data for the car being driven.
     - For the normalised vectors below, to convert to float values divide by 32767.0f – 16-bit signed values are used to pack the data and on the assumption
         that direction values are always between -1.0f and 1.0f.
     - Frequency: Rate as specified in menus
@@ -64,15 +72,14 @@ struct CarMotionData {
 };
 
 struct PacketMotionData {
-    PacketHeader m_header;             // header
-    CarMotionData m_carMotionData[22]; // data for all cars on track
-    // player-only data
-    float m_suspensionPosition[4]; // all wheel arrays have the following order: RL, RR, FL, FR
-    float m_suspensionVelocity[4];
-    float m_suspensionAcceleration[4];
-    float m_wheelSpeed[4];  // speed of each wheel
-    float m_wheelSlip[4];   // slip ration for each wheel
-    float m_localVelocityX; // velocity in local space
+    PacketHeader* m_header;                                // header
+    std::array<CarMotionData*, CAR_COUNT> m_carMotionData; // data for all cars on track
+    std::array<float, 4> m_suspensionPosition;             // all wheel arrays have the following order: RL, RR, FL, FR
+    std::array<float, 4> m_suspensionVelocity;
+    std::array<float, 4> m_suspensionAcceleration;
+    std::array<float, 4> m_wheelSpeed; // speed of each wheel
+    std::array<float, 4> m_wheelSlip;  // slip ratio for each wheel
+    float m_localVelocityX;            // velocity in local space
     float m_localVelocityY;
     float m_localVelocityZ;
     float m_angularVelocityX; // angular velocity
@@ -85,7 +92,6 @@ struct PacketMotionData {
 };
 
 } // namespace F12020
-
 } // namespace F1Telem
 
 #endif // F1TELEM_F12020_TYPES_HPP

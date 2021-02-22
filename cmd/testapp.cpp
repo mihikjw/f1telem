@@ -9,7 +9,7 @@ constexpr int SUCCESS_EXIT = 0;
 constexpr int ERR_EXIT = 1;
 
 int main() {
-    auto reader = F1Telem::UDPReader(8080);
+    auto reader = F1Telem::UDPReader(20777);
 
     char* buffer = reader.CreateBuffer();
     if (!buffer) {
@@ -20,7 +20,7 @@ int main() {
     auto decoder = std::unique_ptr<F1Telem::Decoder>(F1Telem::DecoderFactory(F1Telem::Edition::E_F12020));
 
     reader.Open();
-    std::printf("UDP Server Listening On Port 8080\n");
+    std::printf("UDP Server Listening On Port 20777\n");
 
     int bytes;
     F1Telem::Packet* packet;
