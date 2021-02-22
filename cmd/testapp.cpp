@@ -2,14 +2,16 @@
 #include <memory>
 
 #include "f1telem/Decoder.hpp"
-#include "f1telem/DecoderFactory.hpp"
+#include "f1telem/Types.hpp"
 #include "f1telem/UDPReader.hpp"
 
 constexpr int SUCCESS_EXIT = 0;
 constexpr int ERR_EXIT = 1;
 
+constexpr int PORT = 20777;
+
 int main() {
-    auto reader = F1Telem::UDPReader(20777);
+    auto reader = F1Telem::UDPReader(PORT);
 
     char* buffer = reader.CreateBuffer();
     if (!buffer) {
@@ -17,19 +19,74 @@ int main() {
         return ERR_EXIT;
     }
 
-    auto decoder = std::unique_ptr<F1Telem::Decoder>(F1Telem::DecoderFactory(F1Telem::Edition::E_F12020));
-
     reader.Open();
-    std::printf("UDP Server Listening On Port 20777\n");
+    std::printf("UDP Server Listening On Port %d\n", PORT);
+
+    F1Telem::Decoder decoder;
 
     int bytes;
-    F1Telem::Packet* packet;
+    uint8_t packetID;
+
+    F1Telem::PacketHeader header;
+    F1Telem::PacketMotionData motionPacket;
 
     while ((bytes = reader.Read(buffer)) > 0) {
-        packet = decoder->DecodePacket(buffer);
-        std::printf("Packet Read: %d\n", bytes);
+        if (!buffer) {
+            std::printf("Buffer Failed Write\n");
+            continue;
+        }
+
+        packetID = decoder.DecodePacketHeader(buffer, &header);
+        std::printf("Packet ID: %d\n", header.m_packetId);
+
+        switch (packetID) {
+            case F1Telem::MOTION: {
+                if (decoder.DecodePacketMotionData(buffer, &header, &motionPacket)) {
+                    std::printf("Packet Decoded Succesfully\n");
+                }
+                break;
+            }
+            case F1Telem::SESSION: {
+                std::printf("Packet Decode Not Implemented\n");
+                break;
+            }
+            case F1Telem::LAP_DATA: {
+                std::printf("Packet Decode Not Implemented\n");
+                break;
+            }
+            case F1Telem::EVENT: {
+                std::printf("Packet Decode Not Implemented\n");
+                break;
+            }
+            case F1Telem::PARTICIPANTS: {
+                std::printf("Packet Decode Not Implemented\n");
+                break;
+            }
+            case F1Telem::CAR_SETUPS: {
+                std::printf("Packet Decode Not Implemented\n");
+                break;
+            }
+            case F1Telem::CAR_TELEMETRY: {
+                std::printf("Packet Decode Not Implemented\n");
+                break;
+            }
+            case F1Telem::CAR_STATUS: {
+                std::printf("Packet Decode Not Implemented\n");
+                break;
+            }
+            case F1Telem::FINAL_CLASSIFICATION: {
+                std::printf("Packet Decode Not Implemented\n");
+                break;
+            }
+            case F1Telem::LOBBY_INFO: {
+                std::printf("Packet Decode Not Implemented\n");
+                break;
+            }
+            default: {
+                std::printf("Failed To Decode Packet\n");
+            }
+        }
     }
 
-    delete packet;
     std::printf("Shutdown\n");
 }

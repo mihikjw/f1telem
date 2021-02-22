@@ -1,23 +1,24 @@
 #ifndef F1TELEM_DECODER_HPP
 #define F1TELEM_DECODER_HPP
 
+#include <cstdint>
 #include <stdexcept>
 
-#include "f1telem/Packet.hpp"
+#include "f1telem/Types.hpp"
 
 namespace F1Telem {
 
 class Decoder {
     public:
-    virtual ~Decoder() = default;
-
-    virtual Packet* DecodePacket(char* buffer) = 0;
-
-    protected:
     Decoder() = default;
-};
+    ~Decoder() = default;
 
-enum Edition { E_F1Legacy, E_F12018, E_F12019, E_F12020 };
+    uint8_t DecodePacketHeader(char* buffer, PacketHeader* header);
+    bool DecodePacketMotionData(char* buffer, PacketHeader* header, PacketMotionData* packet);
+
+    private:
+    CarMotionData* decodeCarMotionData(char* buffer);
+};
 
 } // namespace F1Telem
 

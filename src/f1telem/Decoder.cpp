@@ -1,61 +1,20 @@
-#include "f1telem/f12020/Decoder.hpp"
+#include "f1telem/Decoder.hpp"
 
 #include <cstring>
 
 using namespace F1Telem;
 
-Packet* F12020::Decoder::DecodePacket(char* buffer) {
-    if (!buffer) {
-        return nullptr;
-    }
-
-    auto header = new PacketHeader();
-    uint8_t packetID = decodePacketHeader(buffer, header);
-
-    switch (packetID) {
-        case F12020::MOTION: {
-            return decodePacketMotionData(buffer, header);
-        }
-        case F12020::SESSION: {
-            return nullptr;
-        }
-        case F12020::LAP_DATA: {
-            return nullptr;
-        }
-        case F12020::EVENT: {
-            return nullptr;
-        }
-        case F12020::PARTICIPANTS: {
-            return nullptr;
-        }
-        case F12020::CAR_SETUPS: {
-            return nullptr;
-        }
-        case F12020::CAR_TELEMETRY: {
-            return nullptr;
-        }
-        case F12020::CAR_STATUS: {
-            return nullptr;
-        }
-        case F12020::FINAL_CLASSIFICATION: {
-            return nullptr;
-        }
-        case F12020::LOBBY_INFO: {
-            return nullptr;
-        }
-        default: {
-            return nullptr;
-        }
-    }
-}
-
-uint8_t F12020::Decoder::decodePacketHeader(char* buffer, PacketHeader* header) {
+uint8_t Decoder::DecodePacketHeader(char* buffer, PacketHeader* header) {
     std::memcpy(&header->m_packetFormat, buffer, sizeof(header->m_packetFormat));
     buffer += sizeof(header->m_packetFormat);
-    std::memcpy(&header->m_gameMajorVersion, buffer, sizeof(header->m_gameMajorVersion));
-    buffer += sizeof(header->m_gameMajorVersion);
-    std::memcpy(&header->m_gameMinorVersion, buffer, sizeof(header->m_gameMinorVersion));
-    buffer += sizeof(header->m_gameMinorVersion);
+
+    if (header->m_packetVersion >= 2019) {
+        std::memcpy(&header->m_gameMajorVersion, buffer, sizeof(header->m_gameMajorVersion));
+        buffer += sizeof(header->m_gameMajorVersion);
+        std::memcpy(&header->m_gameMinorVersion, buffer, sizeof(header->m_gameMinorVersion));
+        buffer += sizeof(header->m_gameMinorVersion);
+    }
+
     std::memcpy(&header->m_packetVersion, buffer, sizeof(header->m_packetVersion));
     buffer += sizeof(header->m_packetVersion);
     std::memcpy(&header->m_packetId, buffer, sizeof(header->m_packetId));
@@ -68,17 +27,32 @@ uint8_t F12020::Decoder::decodePacketHeader(char* buffer, PacketHeader* header) 
     buffer += sizeof(header->m_frameIdentifier);
     std::memcpy(&header->m_playerCarIndex, buffer, sizeof(header->m_playerCarIndex));
     buffer += sizeof(header->m_playerCarIndex);
-    std::memcpy(&header->m_secondaryPlayerCarIndex, buffer, sizeof(header->m_secondaryPlayerCarIndex));
-    buffer += sizeof(header->m_secondaryPlayerCarIndex);
+
+    if (header->m_packetVersion >= 2020) {
+        std::memcpy(&header->m_secondaryPlayerCarIndex, buffer, sizeof(header->m_secondaryPlayerCarIndex));
+        buffer += sizeof(header->m_secondaryPlayerCarIndex);
+    }
+
     return header->m_packetId;
 }
 
-Packet* F12020::Decoder::decodePacketMotionData(char* buffer, PacketHeader* header) {
-    auto packet = new PacketMotionData();
+bool Decoder::DecodePacketMotionData(char* buffer, PacketHeader* header, PacketMotionData* packet) {
+    if (!buffer || !header || !packet) {
+        return false;
+    }
+
     packet->m_header = header;
 
-    for (auto& i : packet->m_carMotionData) {
-        i = decodeCarMotionData(buffer);
+    // F12020 increased number of cars by 2, support this as default and set last 2 cars as null for earlier versions
+    uint8_t carCount = F12020_CAR_COUNT;
+    if (packet->m_header->m_packetVersion < 2020) {
+        carCount = LEGACY_CAR_COUNT;
+        packet->m_carMotionData[LEGACY_CAR_COUNT - 2] = nullptr;
+        packet->m_carMotionData[LEGACY_CAR_COUNT - 1] = nullptr;
+    }
+
+    for (uint8_t i = 0; i < carCount; i++) {
+        packet->m_carMotionData[i] = decodeCarMotionData(buffer);
     }
 
     for (auto& i : packet->m_suspensionPosition) {
@@ -130,10 +104,10 @@ Packet* F12020::Decoder::decodePacketMotionData(char* buffer, PacketHeader* head
     std::memcpy(&packet->m_frontWheelsAngle, buffer, sizeof(packet->m_frontWheelsAngle));
     buffer += sizeof(packet->m_frontWheelsAngle);
 
-    return nullptr;
+    return true;
 }
 
-F12020::CarMotionData* F12020::Decoder::decodeCarMotionData(char* buffer) {
+CarMotionData* Decoder::decodeCarMotionData(char* buffer) {
     auto data = new CarMotionData();
 
     std::memcpy(&data->m_worldPositionX, buffer, sizeof(data->m_worldPositionX));

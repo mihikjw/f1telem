@@ -1,22 +1,19 @@
-#ifndef F1TELEM_F12020_TYPES_HPP
-#define F1TELEM_F12020_TYPES_HPP
+#ifndef F1TELEM_TYPES_HPP
+#define F1TELEM_TYPES_HPP
 
-#include <cstdint>
 #include <array>
+#include <cstdint>
 
 /*
-    - spec: https://forums.codemasters.com/topic/50942-f1-2020-udp-specification/
+    - specs:
+        - https://forums.codemasters.com/topic/50942-f1-2020-udp-specification/
     - All values are little-endian
     - All data packed, no padding used
 */
 
 namespace F1Telem {
-namespace F12020 {
 
-// CAR_COUNT is the number of supported cars in F1 2020
-constexpr uint8_t CAR_COUNT = 22;
-
-// PacketHeader is a header sent with all packets transmitted
+// PacketHeader is a header sent with all packets transmitted - not all fields will be filled, check packetFormat
 struct PacketHeader {
     uint16_t m_packetFormat;           // 2020
     uint8_t m_gameMajorVersion;        // X.00
@@ -41,6 +38,10 @@ constexpr uint8_t CAR_TELEMETRY = 6;
 constexpr uint8_t CAR_STATUS = 7;
 constexpr uint8_t FINAL_CLASSIFICATION = 8;
 constexpr uint8_t LOBBY_INFO = 9;
+
+// car counts are the number of supported cars, changed in F12020
+constexpr uint8_t F12020_CAR_COUNT = 22;
+constexpr uint8_t LEGACY_CAR_COUNT = 20;
 
 /*
 PacketMotionData gives physics data for all cars being driven. There is additional data for the car being driven.
@@ -72,9 +73,9 @@ struct CarMotionData {
 };
 
 struct PacketMotionData {
-    PacketHeader* m_header;                                // header
-    std::array<CarMotionData*, CAR_COUNT> m_carMotionData; // data for all cars on track
-    std::array<float, 4> m_suspensionPosition;             // all wheel arrays have the following order: RL, RR, FL, FR
+    PacketHeader* m_header;                                       // header
+    std::array<CarMotionData*, F12020_CAR_COUNT> m_carMotionData; // data for all cars on track
+    std::array<float, 4> m_suspensionPosition;                    // all wheel arrays have the following order: RL, RR, FL, FR
     std::array<float, 4> m_suspensionVelocity;
     std::array<float, 4> m_suspensionAcceleration;
     std::array<float, 4> m_wheelSpeed; // speed of each wheel
@@ -91,7 +92,6 @@ struct PacketMotionData {
     float m_frontWheelsAngle; // current front wheels angle in radians
 };
 
-} // namespace F12020
 } // namespace F1Telem
 
 #endif // F1TELEM_F12020_TYPES_HPP

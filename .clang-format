@@ -8,4 +8,4 @@ DerivePointerAlignment: true
 PointerAlignment: Left
 ColumnLimit: 160
 AccessModifierOffset: 0
-SortIncludes: false
+SortIncludes: true
