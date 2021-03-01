@@ -277,12 +277,15 @@ bool Decoder::DecodePacketSessionData(char** buffer, PacketHeader* header, Packe
     std::memcpy(&packet->m_networkGame, *buffer, sizeof(packet->m_networkGame));
     *buffer += sizeof(packet->m_networkGame);
     bytesRead += sizeof(packet->m_networkGame);
-    std::memcpy(&packet->m_numWeatherForecastSamples, *buffer, sizeof(packet->m_numWeatherForecastSamples));
-    *buffer += sizeof(packet->m_numWeatherForecastSamples);
-    bytesRead += sizeof(packet->m_numWeatherForecastSamples);
 
-    for (uint8_t i = 0; i < MAX_WEATHER_FORECAST_SAMPLES; i++) {
-        packet->m_weatherForecastSamples[i] = decodeWeatherForecastSampleData(buffer);
+    if (header->m_packetFormat >= 2020) {
+        std::memcpy(&packet->m_numWeatherForecastSamples, *buffer, sizeof(packet->m_numWeatherForecastSamples));
+        *buffer += sizeof(packet->m_numWeatherForecastSamples);
+        bytesRead += sizeof(packet->m_numWeatherForecastSamples);
+
+        for (uint8_t i = 0; i < MAX_WEATHER_FORECAST_SAMPLES; i++) {
+            packet->m_weatherForecastSamples[i] = decodeWeatherForecastSampleData(buffer);
+        }
     }
 
     return true;

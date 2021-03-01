@@ -123,7 +123,7 @@ struct PacketSessionData {
     uint16_t m_trackLength;    // track length in meters
     uint8_t m_sessionType; // 0 = unknown, 1 = P1, 2 = P2, 3 = P3, 4 = Short P, 5 = Q1, 6 = Q2, 7 = Q3, 8 = Short Q, 9 = OSQ, 10 = R, 11 = R2, 12 = Time Trial
     int8_t m_trackId;      // -1 for unknown, 0-21 for tracks, see tracks constants
-    uint8_t m_formula;     // 0 = F1 Modern, 1 = F1 Classic, 2 = F2, 3 = F1 Generic
+    uint8_t m_formula;     // 0 = F1 Modern, 1 = F1 Classic, 2 = F2, 3 = F1 Generic NOTE: before F1 2018 (m_era): 0 = modern, 1 = classic
     uint16_t m_sessionTimeLeft;                                                                // time left in session in seconds
     uint16_t m_sessionDuration;                                                                // session duration in seconds
     uint8_t m_pitSpeedLimit;                                                                   // pit speed limit in kph
