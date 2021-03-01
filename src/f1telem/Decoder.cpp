@@ -4,19 +4,15 @@
 
 using namespace F1Telem;
 
-bool Decoder::ValidateLastPacket(int bytesRecieved) {
+Decoder::Decoder() noexcept { bytesRead = 0; }
+
+bool Decoder::ValidateLastPacket(int bytesRecieved) noexcept {
     bool result = bytesRead == bytesRecieved;
     ResetByteCount();
     return result;
 }
 
-void Decoder::ResetByteCount() { bytesRead = 0; }
-
-void Decoder::readFromBuffer(char** buffer, void* out, size_t size) {
-    std::memcpy(out, *buffer, size);
-    *buffer += size;
-    bytesRead += size;
-}
+void Decoder::ResetByteCount() noexcept { bytesRead = 0; }
 
 uint8_t Decoder::DecodePacketHeader(char** buffer, PacketHeader* header) {
     if (!buffer || !(*buffer) || !header) {
@@ -64,7 +60,7 @@ uint8_t Decoder::DecodePacketHeader(char** buffer, PacketHeader* header) {
     return header->m_packetId;
 }
 
-uint8_t Decoder::getCarCount(PacketHeader* header) {
+uint8_t Decoder::getCarCount(PacketHeader* header) noexcept {
     // F12020 increased number of cars by 2, support this as default and set last 2 cars as null for earlier versions
     uint8_t carCount = F12020_CAR_COUNT;
     if (header->m_packetFormat < 2020) {

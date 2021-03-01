@@ -59,42 +59,34 @@ int main() {
                 break;
             }
             case F1Telem::EVENT: {
-                std::printf("Packet Decode Not Implemented\n");
                 decoder.ResetByteCount();
                 continue;
             }
             case F1Telem::PARTICIPANTS: {
-                std::printf("Packet Decode Not Implemented\n");
                 decoder.ResetByteCount();
                 continue;
             }
             case F1Telem::CAR_SETUPS: {
-                std::printf("Packet Decode Not Implemented\n");
                 decoder.ResetByteCount();
                 continue;
             }
             case F1Telem::CAR_TELEMETRY: {
-                std::printf("Packet Decode Not Implemented\n");
                 decoder.ResetByteCount();
                 continue;
             }
             case F1Telem::CAR_STATUS: {
-                std::printf("Packet Decode Not Implemented\n");
                 decoder.ResetByteCount();
                 continue;
             }
             case F1Telem::FINAL_CLASSIFICATION: {
-                std::printf("Packet Decode Not Implemented\n");
                 decoder.ResetByteCount();
                 continue;
             }
             case F1Telem::LOBBY_INFO: {
-                std::printf("Packet Decode Not Implemented\n");
                 decoder.ResetByteCount();
                 continue;
             }
             default: {
-                std::printf("Failed To Decode Packet\n");
                 decoder.ResetByteCount();
                 continue;
             }
