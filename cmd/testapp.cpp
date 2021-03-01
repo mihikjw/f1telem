@@ -29,6 +29,7 @@ int main() {
     F1Telem::PacketHeader header;
     F1Telem::PacketMotionData motionPacket;
     F1Telem::PacketSessionData sessionPacket;
+    F1Telem::PacketLapData lapDataPacket;
 
     while ((bytes = reader.Read(buffer)) > 0) {
         if (!buffer) {
@@ -37,6 +38,11 @@ int main() {
         }
 
         packetID = decoder.DecodePacketHeader(&buffer, &header);
+        if (packetID == 255) {
+            std::printf("Unable To Decode Packet Header\n");
+            continue;
+        }
+
         std::printf("Packet ID: %d\n", header.m_packetId);
 
         switch (packetID) {
@@ -49,9 +55,8 @@ int main() {
                 break;
             }
             case F1Telem::LAP_DATA: {
-                std::printf("Packet Decode Not Implemented\n");
-                decoder.ResetByteCount();
-                continue;
+                decoder.DecodePacketLapData(&buffer, &header, &lapDataPacket);
+                break;
             }
             case F1Telem::EVENT: {
                 std::printf("Packet Decode Not Implemented\n");

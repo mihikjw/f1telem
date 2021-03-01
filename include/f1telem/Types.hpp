@@ -73,9 +73,9 @@ struct CarMotionData {
 };
 
 struct PacketMotionData {
-    PacketHeader* m_header;                                       // header
-    std::array<CarMotionData*, F12020_CAR_COUNT> m_carMotionData; // data for all cars on track
-    std::array<float, 4> m_suspensionPosition;                    // all wheel arrays have the following order: RL, RR, FL, FR
+    PacketHeader* m_header;                                      // header
+    std::array<CarMotionData, F12020_CAR_COUNT> m_carMotionData; // data for all cars on track
+    std::array<float, 4> m_suspensionPosition;                   // all wheel arrays have the following order: RL, RR, FL, FR
     std::array<float, 4> m_suspensionVelocity;
     std::array<float, 4> m_suspensionAcceleration;
     std::array<float, 4> m_wheelSpeed; // speed of each wheel
@@ -124,19 +124,60 @@ struct PacketSessionData {
     uint8_t m_sessionType; // 0 = unknown, 1 = P1, 2 = P2, 3 = P3, 4 = Short P, 5 = Q1, 6 = Q2, 7 = Q3, 8 = Short Q, 9 = OSQ, 10 = R, 11 = R2, 12 = Time Trial
     int8_t m_trackId;      // -1 for unknown, 0-21 for tracks, see tracks constants
     uint8_t m_formula;     // 0 = F1 Modern, 1 = F1 Classic, 2 = F2, 3 = F1 Generic NOTE: before F1 2018 (m_era): 0 = modern, 1 = classic
-    uint16_t m_sessionTimeLeft;                                                                // time left in session in seconds
-    uint16_t m_sessionDuration;                                                                // session duration in seconds
-    uint8_t m_pitSpeedLimit;                                                                   // pit speed limit in kph
-    uint8_t m_gamePaused;                                                                      // whether the game is paused
-    uint8_t m_isSpectating;                                                                    // whether the player is spectating
-    uint8_t m_spectatorCarIndex;                                                               // index of the car being spectated
-    uint8_t m_sliProNativeSupport;                                                             // SLI pro support, 0 = inactive, 1 = active
-    uint8_t m_numMarshalZones;                                                                 // number of marshal zones to follow
-    std::array<MarshalZone*, MAX_MARSHAL_ZONES> m_marshalZones;                                // list of marshal zones
-    uint8_t m_safetyCarStatus;                                                                 // 0 = no safety car, 1 = full safety car, 2 = VSC
-    uint8_t m_networkGame;                                                                     // 0 = offline, 1 = online
-    uint8_t m_numWeatherForecastSamples;                                                       // number of weather samples to follow
-    std::array<WeatherForecastSample*, MAX_WEATHER_FORECAST_SAMPLES> m_weatherForecastSamples; // array of weather forecase samples
+    uint16_t m_sessionTimeLeft;                                                               // time left in session in seconds
+    uint16_t m_sessionDuration;                                                               // session duration in seconds
+    uint8_t m_pitSpeedLimit;                                                                  // pit speed limit in kph
+    uint8_t m_gamePaused;                                                                     // whether the game is paused
+    uint8_t m_isSpectating;                                                                   // whether the player is spectating
+    uint8_t m_spectatorCarIndex;                                                              // index of the car being spectated
+    uint8_t m_sliProNativeSupport;                                                            // SLI pro support, 0 = inactive, 1 = active
+    uint8_t m_numMarshalZones;                                                                // number of marshal zones to follow
+    std::array<MarshalZone, MAX_MARSHAL_ZONES> m_marshalZones;                                // list of marshal zones
+    uint8_t m_safetyCarStatus;                                                                // 0 = no safety car, 1 = full safety car, 2 = VSC
+    uint8_t m_networkGame;                                                                    // 0 = offline, 1 = online
+    uint8_t m_numWeatherForecastSamples;                                                      // number of weather samples to follow
+    std::array<WeatherForecastSample, MAX_WEATHER_FORECAST_SAMPLES> m_weatherForecastSamples; // array of weather forecase samples
+};
+
+/*
+PacketLapData gives details of all the cars in the session
+    - Frequency: Rate as specified in menus
+    - Size: 1190 bytes (F12020)
+    - Version: 1
+*/
+struct LapData {
+    float m_lastLapTime;                   // last lap time in seconds
+    float m_currentLapTime;                // current time around the lap in seconds
+    uint16_t m_sector1TimeInMS;            // sector 1 time in milliseconds
+    uint16_t m_sector2TimeInMS;            // sector 2 time in milliseconds
+    float m_bestLapTime;                   // best lap time of the session in seconds
+    uint8_t m_bestLapNum;                  // lap number best time achieved on
+    uint16_t m_bestLapSector1TimeInMS;     // Sector 1 time of best lap in the session in milliseconds
+    uint16_t m_bestLapSector2TimeInMS;     // Sector 2 time of best lap in the session in milliseconds
+    uint16_t m_bestLapSector3TimeInMS;     // Sector 3 time of best lap in the session in milliseconds
+    uint16_t m_bestOverallSector1TimeInMS; // Best overall sector 1 time of the session in milliseconds
+    uint8_t m_bestOverallSector1LapNum;    // Lap number best overall sector 1 time achieved on
+    uint16_t m_bestOverallSector2TimeInMS; // Best overall sector 2 time of the session in milliseconds
+    uint8_t m_bestOverallSector2LapNum;    // Lap number best overall sector 2 time achieved on
+    uint16_t m_bestOverallSector3TimeInMS; // Best overall sector 3 time of the session in milliseconds
+    uint8_t m_bestOverallSector3LapNum;    // Lap number best overall sector 3 time achieved on
+    float m_lapDistance;                   // Distance vehicle is around current lap in metres – could be negative if line hasn’t been crossed yet
+    float m_totalDistance;                 // Total distance travelled in session in metres – could be negative if line hasn’t been crossed yet
+    float m_safetyCarDelta;                // Delta in seconds for safety car
+    uint8_t m_carPosition;                 // Car race position
+    uint8_t m_currentLapNum;               // Current lap number
+    uint8_t m_pitStatus;                   // 0 = none, 1 = pitting, 2 = in pit area
+    uint8_t m_sector;                      // 0 = sector1, 1 = sector2, 2 = sector3
+    uint8_t m_currentLapInvalid;           // Current lap invalid - 0 = valid, 1 = invalid
+    uint8_t m_penalties;                   // Accumulated time penalties in seconds to be added
+    uint8_t m_gridPosition;                // Grid position the vehicle started the race in
+    uint8_t m_driverStatus;                // Status of driver - 0 = in garage, 1 = flying lap, 2 = in lap, 3 = out lap, 4 = on track
+    uint8_t m_resultStatus; // Result status - 0 = invalid, 1 = inactive, 2 = active, 3 = finished, 4 = disqualified, 5 = not classified, 6 = retired
+};
+
+struct PacketLapData {
+    PacketHeader* m_header;                          // header
+    std::array<LapData, F12020_CAR_COUNT> m_lapData; // lap data for all cars on track
 };
 
 } // namespace F1Telem

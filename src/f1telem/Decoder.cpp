@@ -12,7 +12,17 @@ bool Decoder::ValidateLastPacket(int bytesRecieved) {
 
 void Decoder::ResetByteCount() { bytesRead = 0; }
 
+void Decoder::readFromBuffer(char** buffer, void* out, size_t size) {
+    std::memcpy(out, *buffer, size);
+    *buffer += size;
+    bytesRead += size;
+}
+
 uint8_t Decoder::DecodePacketHeader(char** buffer, PacketHeader* header) {
+    if (!buffer || !(*buffer) || !header) {
+        return 255;
+    }
+
     std::memcpy(&header->m_packetFormat, *buffer, sizeof(header->m_packetFormat));
     *buffer += sizeof(header->m_packetFormat);
     bytesRead += sizeof(header->m_packetFormat);
@@ -54,23 +64,25 @@ uint8_t Decoder::DecodePacketHeader(char** buffer, PacketHeader* header) {
     return header->m_packetId;
 }
 
+uint8_t Decoder::getCarCount(PacketHeader* header) {
+    // F12020 increased number of cars by 2, support this as default and set last 2 cars as null for earlier versions
+    uint8_t carCount = F12020_CAR_COUNT;
+    if (header->m_packetFormat < 2020) {
+        carCount = LEGACY_CAR_COUNT;
+    }
+    return carCount;
+}
+
 bool Decoder::DecodePacketMotionData(char** buffer, PacketHeader* header, PacketMotionData* packet) {
     if (!buffer || !*(buffer) || !header || !packet) {
         return false;
     }
 
     packet->m_header = header;
-
-    // F12020 increased number of cars by 2, support this as default and set last 2 cars as null for earlier versions
-    uint8_t carCount = F12020_CAR_COUNT;
-    if (packet->m_header->m_packetFormat < 2020) {
-        carCount = LEGACY_CAR_COUNT;
-        packet->m_carMotionData[LEGACY_CAR_COUNT - 2] = nullptr;
-        packet->m_carMotionData[LEGACY_CAR_COUNT - 1] = nullptr;
-    }
+    uint8_t carCount = getCarCount(header);
 
     for (uint8_t i = 0; i < carCount; i++) {
-        packet->m_carMotionData[i] = decodeCarMotionData(buffer);
+        decodeCarMotionData(buffer, &packet->m_carMotionData[i]);
     }
 
     for (auto& i : packet->m_suspensionPosition) {
@@ -140,9 +152,7 @@ bool Decoder::DecodePacketMotionData(char** buffer, PacketHeader* header, Packet
     return true;
 }
 
-CarMotionData* Decoder::decodeCarMotionData(char** buffer) {
-    auto data = new CarMotionData();
-
+void Decoder::decodeCarMotionData(char** buffer, CarMotionData* data) {
     std::memcpy(&data->m_worldPositionX, *buffer, sizeof(data->m_worldPositionX));
     *buffer += sizeof(data->m_worldPositionX);
     bytesRead += sizeof(data->m_worldPositionX);
@@ -202,8 +212,6 @@ CarMotionData* Decoder::decodeCarMotionData(char** buffer) {
     std::memcpy(&data->m_roll, *buffer, sizeof(data->m_roll));
     *buffer += sizeof(data->m_roll);
     bytesRead += sizeof(data->m_roll);
-
-    return data;
 }
 
 bool Decoder::DecodePacketSessionData(char** buffer, PacketHeader* header, PacketSessionData* packet) {
@@ -268,7 +276,7 @@ bool Decoder::DecodePacketSessionData(char** buffer, PacketHeader* header, Packe
     bytesRead += sizeof(packet->m_numMarshalZones);
 
     for (uint8_t i = 0; i < MAX_MARSHAL_ZONES; i++) {
-        packet->m_marshalZones[i] = decodeMarshalZoneData(buffer);
+        decodeMarshalZoneData(buffer, &packet->m_marshalZones[i]);
     }
 
     std::memcpy(&packet->m_safetyCarStatus, *buffer, sizeof(packet->m_safetyCarStatus));
@@ -284,26 +292,22 @@ bool Decoder::DecodePacketSessionData(char** buffer, PacketHeader* header, Packe
         bytesRead += sizeof(packet->m_numWeatherForecastSamples);
 
         for (uint8_t i = 0; i < MAX_WEATHER_FORECAST_SAMPLES; i++) {
-            packet->m_weatherForecastSamples[i] = decodeWeatherForecastSampleData(buffer);
+            decodeWeatherForecastSampleData(buffer, &packet->m_weatherForecastSamples[i]);
         }
     }
 
     return true;
 }
 
-MarshalZone* Decoder::decodeMarshalZoneData(char** buffer) {
-    auto data = new MarshalZone();
+void Decoder::decodeMarshalZoneData(char** buffer, MarshalZone* data) {
     std::memcpy(&data->m_zoneStart, *buffer, sizeof(data->m_zoneStart));
     *buffer += sizeof(data->m_zoneStart);
     bytesRead += sizeof(data->m_zoneStart);
     std::memcpy(&data->m_zoneFlag, *buffer, sizeof(data->m_zoneFlag));
     *buffer += sizeof(data->m_zoneFlag);
     bytesRead += sizeof(data->m_zoneFlag);
-    return data;
 }
-
-WeatherForecastSample* Decoder::decodeWeatherForecastSampleData(char** buffer) {
-    auto data = new WeatherForecastSample();
+void Decoder::decodeWeatherForecastSampleData(char** buffer, WeatherForecastSample* data) {
     std::memcpy(&data->m_sessionType, *buffer, sizeof(data->m_sessionType));
     *buffer += sizeof(data->m_sessionType);
     bytesRead += sizeof(data->m_sessionType);
@@ -319,5 +323,108 @@ WeatherForecastSample* Decoder::decodeWeatherForecastSampleData(char** buffer) {
     std::memcpy(&data->m_airTemperature, *buffer, sizeof(data->m_airTemperature));
     *buffer += sizeof(data->m_airTemperature);
     bytesRead += sizeof(data->m_airTemperature);
-    return data;
+}
+
+bool Decoder::DecodePacketLapData(char** buffer, PacketHeader* header, PacketLapData* packet) {
+    if (!buffer || !header || !*(buffer) || !packet) {
+        return false;
+    }
+
+    packet->m_header = header;
+
+    uint8_t carCount = getCarCount(header);
+
+    for (uint8_t i = 0; i < carCount; i++) {
+        decodeLapData(buffer, &packet->m_lapData[i]);
+    }
+
+    return true;
+}
+
+void Decoder::decodeLapData(char** buffer, LapData* data) {
+    std::memcpy(&data->m_lastLapTime, *buffer, sizeof(data->m_lastLapTime));
+    *buffer += sizeof(data->m_lastLapTime);
+    bytesRead += sizeof(data->m_lastLapTime);
+    std::memcpy(&data->m_currentLapTime, *buffer, sizeof(data->m_currentLapTime));
+    *buffer += sizeof(data->m_currentLapTime);
+    bytesRead += sizeof(data->m_currentLapTime);
+    std::memcpy(&data->m_sector1TimeInMS, *buffer, sizeof(data->m_sector1TimeInMS));
+    *buffer += sizeof(data->m_sector1TimeInMS);
+    bytesRead += sizeof(data->m_sector1TimeInMS);
+    std::memcpy(&data->m_sector2TimeInMS, *buffer, sizeof(data->m_sector2TimeInMS));
+    *buffer += sizeof(data->m_sector2TimeInMS);
+    bytesRead += sizeof(data->m_sector2TimeInMS);
+    std::memcpy(&data->m_bestLapTime, *buffer, sizeof(data->m_bestLapTime));
+
+    *buffer += sizeof(data->m_bestLapTime);
+    bytesRead += sizeof(data->m_bestLapTime);
+    std::memcpy(&data->m_bestLapNum, *buffer, sizeof(data->m_bestLapNum));
+    *buffer += sizeof(data->m_bestLapNum);
+    bytesRead += sizeof(data->m_bestLapNum);
+    std::memcpy(&data->m_bestLapSector1TimeInMS, *buffer, sizeof(data->m_bestLapSector1TimeInMS));
+    *buffer += sizeof(data->m_bestLapSector1TimeInMS);
+    bytesRead += sizeof(data->m_bestLapSector1TimeInMS);
+    std::memcpy(&data->m_bestLapSector2TimeInMS, *buffer, sizeof(data->m_bestLapSector2TimeInMS));
+    *buffer += sizeof(data->m_bestLapSector2TimeInMS);
+    bytesRead += sizeof(data->m_bestLapSector2TimeInMS);
+    std::memcpy(&data->m_bestLapSector3TimeInMS, *buffer, sizeof(data->m_bestLapSector3TimeInMS));
+    *buffer += sizeof(data->m_bestLapSector3TimeInMS);
+    bytesRead += sizeof(data->m_bestLapSector3TimeInMS);
+
+    std::memcpy(&data->m_bestOverallSector1TimeInMS, *buffer, sizeof(data->m_bestOverallSector1TimeInMS));
+    *buffer += sizeof(data->m_bestOverallSector1TimeInMS);
+    bytesRead += sizeof(data->m_bestOverallSector1TimeInMS);
+    std::memcpy(&data->m_bestOverallSector1LapNum, *buffer, sizeof(data->m_bestOverallSector1LapNum));
+    *buffer += sizeof(data->m_bestOverallSector1LapNum);
+    bytesRead += sizeof(data->m_bestOverallSector1LapNum);
+    std::memcpy(&data->m_bestOverallSector2TimeInMS, *buffer, sizeof(data->m_bestOverallSector2TimeInMS));
+    *buffer += sizeof(data->m_bestOverallSector2TimeInMS);
+    bytesRead += sizeof(data->m_bestOverallSector2TimeInMS);
+    std::memcpy(&data->m_bestOverallSector2LapNum, *buffer, sizeof(data->m_bestOverallSector2LapNum));
+    *buffer += sizeof(data->m_bestOverallSector2LapNum);
+    bytesRead += sizeof(data->m_bestOverallSector2LapNum);
+    std::memcpy(&data->m_bestOverallSector3TimeInMS, *buffer, sizeof(data->m_bestOverallSector3TimeInMS));
+    *buffer += sizeof(data->m_bestOverallSector3TimeInMS);
+    bytesRead += sizeof(data->m_bestOverallSector3TimeInMS);
+    std::memcpy(&data->m_bestOverallSector3LapNum, *buffer, sizeof(data->m_bestOverallSector3LapNum));
+    *buffer += sizeof(data->m_bestOverallSector3LapNum);
+    bytesRead += sizeof(data->m_bestOverallSector3LapNum);
+
+    std::memcpy(&data->m_lapDistance, *buffer, sizeof(data->m_lapDistance));
+    *buffer += sizeof(data->m_lapDistance);
+    bytesRead += sizeof(data->m_lapDistance);
+    std::memcpy(&data->m_totalDistance, *buffer, sizeof(data->m_totalDistance));
+    *buffer += sizeof(data->m_totalDistance);
+    bytesRead += sizeof(data->m_totalDistance);
+    std::memcpy(&data->m_safetyCarDelta, *buffer, sizeof(data->m_safetyCarDelta));
+    *buffer += sizeof(data->m_safetyCarDelta);
+    bytesRead += sizeof(data->m_safetyCarDelta);
+
+    std::memcpy(&data->m_carPosition, *buffer, sizeof(data->m_carPosition));
+    *buffer += sizeof(data->m_carPosition);
+    bytesRead += sizeof(data->m_carPosition);
+    std::memcpy(&data->m_currentLapNum, *buffer, sizeof(data->m_currentLapNum));
+    *buffer += sizeof(data->m_currentLapNum);
+    bytesRead += sizeof(data->m_currentLapNum);
+    std::memcpy(&data->m_pitStatus, *buffer, sizeof(data->m_pitStatus));
+    *buffer += sizeof(data->m_pitStatus);
+    bytesRead += sizeof(data->m_pitStatus);
+    std::memcpy(&data->m_sector, *buffer, sizeof(data->m_sector));
+    *buffer += sizeof(data->m_sector);
+    bytesRead += sizeof(data->m_sector);
+    std::memcpy(&data->m_currentLapInvalid, *buffer, sizeof(data->m_currentLapInvalid));
+    *buffer += sizeof(data->m_currentLapInvalid);
+    bytesRead += sizeof(data->m_currentLapInvalid);
+    std::memcpy(&data->m_penalties, *buffer, sizeof(data->m_penalties));
+    *buffer += sizeof(data->m_penalties);
+    bytesRead += sizeof(data->m_penalties);
+    std::memcpy(&data->m_gridPosition, *buffer, sizeof(data->m_gridPosition));
+    *buffer += sizeof(data->m_gridPosition);
+    bytesRead += sizeof(data->m_gridPosition);
+    std::memcpy(&data->m_driverStatus, *buffer, sizeof(data->m_driverStatus));
+    *buffer += sizeof(data->m_driverStatus);
+    bytesRead += sizeof(data->m_driverStatus);
+    std::memcpy(&data->m_resultStatus, *buffer, sizeof(data->m_resultStatus));
+    *buffer += sizeof(data->m_resultStatus);
+    bytesRead += sizeof(data->m_resultStatus);
 }
