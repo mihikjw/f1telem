@@ -331,60 +331,71 @@ bool Decoder::DecodePacketLapData(char** buffer, PacketHeader* header, PacketLap
     uint8_t carCount = getCarCount(header);
 
     for (uint8_t i = 0; i < carCount; i++) {
-        decodeLapData(buffer, &packet->m_lapData[i]);
+        decodeLapData(buffer, header, &packet->m_lapData[i]);
     }
 
     return true;
 }
 
-void Decoder::decodeLapData(char** buffer, LapData* data) {
+void Decoder::decodeLapData(char** buffer, PacketHeader* header, LapData* data) {
     std::memcpy(&data->m_lastLapTime, *buffer, sizeof(data->m_lastLapTime));
     *buffer += sizeof(data->m_lastLapTime);
     bytesRead += sizeof(data->m_lastLapTime);
     std::memcpy(&data->m_currentLapTime, *buffer, sizeof(data->m_currentLapTime));
     *buffer += sizeof(data->m_currentLapTime);
     bytesRead += sizeof(data->m_currentLapTime);
-    std::memcpy(&data->m_sector1TimeInMS, *buffer, sizeof(data->m_sector1TimeInMS));
-    *buffer += sizeof(data->m_sector1TimeInMS);
-    bytesRead += sizeof(data->m_sector1TimeInMS);
-    std::memcpy(&data->m_sector2TimeInMS, *buffer, sizeof(data->m_sector2TimeInMS));
-    *buffer += sizeof(data->m_sector2TimeInMS);
-    bytesRead += sizeof(data->m_sector2TimeInMS);
-    std::memcpy(&data->m_bestLapTime, *buffer, sizeof(data->m_bestLapTime));
 
+    if (header->m_packetFormat >= 2020) {
+        std::memcpy(&data->m_sector1TimeInMS, *buffer, sizeof(data->m_sector1TimeInMS));
+        *buffer += sizeof(data->m_sector1TimeInMS);
+        bytesRead += sizeof(data->m_sector1TimeInMS);
+        std::memcpy(&data->m_sector2TimeInMS, *buffer, sizeof(data->m_sector2TimeInMS));
+        *buffer += sizeof(data->m_sector2TimeInMS);
+        bytesRead += sizeof(data->m_sector2TimeInMS);
+    }
+
+    std::memcpy(&data->m_bestLapTime, *buffer, sizeof(data->m_bestLapTime));
     *buffer += sizeof(data->m_bestLapTime);
     bytesRead += sizeof(data->m_bestLapTime);
-    std::memcpy(&data->m_bestLapNum, *buffer, sizeof(data->m_bestLapNum));
-    *buffer += sizeof(data->m_bestLapNum);
-    bytesRead += sizeof(data->m_bestLapNum);
+
+    if (header->m_packetFormat >= 2020) {
+        std::memcpy(&data->m_bestLapNum, *buffer, sizeof(data->m_bestLapNum));
+        *buffer += sizeof(data->m_bestLapNum);
+        bytesRead += sizeof(data->m_bestLapNum);
+    }
+
+    // recorded in seconds for <= f1 2019
     std::memcpy(&data->m_bestLapSector1TimeInMS, *buffer, sizeof(data->m_bestLapSector1TimeInMS));
     *buffer += sizeof(data->m_bestLapSector1TimeInMS);
     bytesRead += sizeof(data->m_bestLapSector1TimeInMS);
     std::memcpy(&data->m_bestLapSector2TimeInMS, *buffer, sizeof(data->m_bestLapSector2TimeInMS));
     *buffer += sizeof(data->m_bestLapSector2TimeInMS);
     bytesRead += sizeof(data->m_bestLapSector2TimeInMS);
-    std::memcpy(&data->m_bestLapSector3TimeInMS, *buffer, sizeof(data->m_bestLapSector3TimeInMS));
-    *buffer += sizeof(data->m_bestLapSector3TimeInMS);
-    bytesRead += sizeof(data->m_bestLapSector3TimeInMS);
 
-    std::memcpy(&data->m_bestOverallSector1TimeInMS, *buffer, sizeof(data->m_bestOverallSector1TimeInMS));
-    *buffer += sizeof(data->m_bestOverallSector1TimeInMS);
-    bytesRead += sizeof(data->m_bestOverallSector1TimeInMS);
-    std::memcpy(&data->m_bestOverallSector1LapNum, *buffer, sizeof(data->m_bestOverallSector1LapNum));
-    *buffer += sizeof(data->m_bestOverallSector1LapNum);
-    bytesRead += sizeof(data->m_bestOverallSector1LapNum);
-    std::memcpy(&data->m_bestOverallSector2TimeInMS, *buffer, sizeof(data->m_bestOverallSector2TimeInMS));
-    *buffer += sizeof(data->m_bestOverallSector2TimeInMS);
-    bytesRead += sizeof(data->m_bestOverallSector2TimeInMS);
-    std::memcpy(&data->m_bestOverallSector2LapNum, *buffer, sizeof(data->m_bestOverallSector2LapNum));
-    *buffer += sizeof(data->m_bestOverallSector2LapNum);
-    bytesRead += sizeof(data->m_bestOverallSector2LapNum);
-    std::memcpy(&data->m_bestOverallSector3TimeInMS, *buffer, sizeof(data->m_bestOverallSector3TimeInMS));
-    *buffer += sizeof(data->m_bestOverallSector3TimeInMS);
-    bytesRead += sizeof(data->m_bestOverallSector3TimeInMS);
-    std::memcpy(&data->m_bestOverallSector3LapNum, *buffer, sizeof(data->m_bestOverallSector3LapNum));
-    *buffer += sizeof(data->m_bestOverallSector3LapNum);
-    bytesRead += sizeof(data->m_bestOverallSector3LapNum);
+    // f1 2020
+    if (header->m_packetFormat >= 2020) {
+        std::memcpy(&data->m_bestLapSector3TimeInMS, *buffer, sizeof(data->m_bestLapSector3TimeInMS));
+        *buffer += sizeof(data->m_bestLapSector3TimeInMS);
+        bytesRead += sizeof(data->m_bestLapSector3TimeInMS);
+        std::memcpy(&data->m_bestOverallSector1TimeInMS, *buffer, sizeof(data->m_bestOverallSector1TimeInMS));
+        *buffer += sizeof(data->m_bestOverallSector1TimeInMS);
+        bytesRead += sizeof(data->m_bestOverallSector1TimeInMS);
+        std::memcpy(&data->m_bestOverallSector1LapNum, *buffer, sizeof(data->m_bestOverallSector1LapNum));
+        *buffer += sizeof(data->m_bestOverallSector1LapNum);
+        bytesRead += sizeof(data->m_bestOverallSector1LapNum);
+        std::memcpy(&data->m_bestOverallSector2TimeInMS, *buffer, sizeof(data->m_bestOverallSector2TimeInMS));
+        *buffer += sizeof(data->m_bestOverallSector2TimeInMS);
+        bytesRead += sizeof(data->m_bestOverallSector2TimeInMS);
+        std::memcpy(&data->m_bestOverallSector2LapNum, *buffer, sizeof(data->m_bestOverallSector2LapNum));
+        *buffer += sizeof(data->m_bestOverallSector2LapNum);
+        bytesRead += sizeof(data->m_bestOverallSector2LapNum);
+        std::memcpy(&data->m_bestOverallSector3TimeInMS, *buffer, sizeof(data->m_bestOverallSector3TimeInMS));
+        *buffer += sizeof(data->m_bestOverallSector3TimeInMS);
+        bytesRead += sizeof(data->m_bestOverallSector3TimeInMS);
+        std::memcpy(&data->m_bestOverallSector3LapNum, *buffer, sizeof(data->m_bestOverallSector3LapNum));
+        *buffer += sizeof(data->m_bestOverallSector3LapNum);
+        bytesRead += sizeof(data->m_bestOverallSector3LapNum);
+    }
 
     std::memcpy(&data->m_lapDistance, *buffer, sizeof(data->m_lapDistance));
     *buffer += sizeof(data->m_lapDistance);
@@ -423,4 +434,178 @@ void Decoder::decodeLapData(char** buffer, LapData* data) {
     std::memcpy(&data->m_resultStatus, *buffer, sizeof(data->m_resultStatus));
     *buffer += sizeof(data->m_resultStatus);
     bytesRead += sizeof(data->m_resultStatus);
+}
+
+bool Decoder::DecodePacketEventData(char** buffer, PacketHeader* header, PacketEventData* packet) {
+    if (!buffer || !header || !*(buffer) || !packet) {
+        return false;
+    }
+
+    packet->m_header = header;
+    packet->m_eventCode = readEventCode(buffer);
+
+    switch (packet->m_eventCode) {
+        case SessionStarted: {
+            break; // no event data to read
+        }
+        case SessionEnded: {
+            break; // no event data to read
+        }
+        case SpeedTrapTriggered: {
+            std::memcpy(&packet->m_eventDetails.SpeedTrap.vehicleIdx, *buffer, sizeof(packet->m_eventDetails.SpeedTrap.vehicleIdx));
+            *buffer += sizeof(packet->m_eventDetails.SpeedTrap.vehicleIdx);
+            bytesRead += sizeof(packet->m_eventDetails.SpeedTrap.vehicleIdx);
+            std::memcpy(&packet->m_eventDetails.SpeedTrap.speed, *buffer, sizeof(packet->m_eventDetails.SpeedTrap.speed));
+            *buffer += sizeof(packet->m_eventDetails.SpeedTrap.speed);
+            bytesRead += sizeof(packet->m_eventDetails.SpeedTrap.speed);
+            break;
+        }
+        case FastestLap: {
+            std::memcpy(&packet->m_eventDetails.FastestLap.vehicleIdx, *buffer, sizeof(packet->m_eventDetails.FastestLap.vehicleIdx));
+            *buffer += sizeof(packet->m_eventDetails.FastestLap.vehicleIdx);
+            bytesRead += sizeof(packet->m_eventDetails.FastestLap.vehicleIdx);
+            std::memcpy(&packet->m_eventDetails.FastestLap.lapTime, *buffer, sizeof(packet->m_eventDetails.FastestLap.lapTime));
+            *buffer += sizeof(packet->m_eventDetails.FastestLap.lapTime);
+            bytesRead += sizeof(packet->m_eventDetails.FastestLap.lapTime);
+            break;
+        }
+        case RaceWinner: {
+            std::memcpy(&packet->m_eventDetails.RaceWinner.vehicleIdx, *buffer, sizeof(packet->m_eventDetails.RaceWinner.vehicleIdx));
+            *buffer += sizeof(packet->m_eventDetails.RaceWinner.vehicleIdx);
+            bytesRead += sizeof(packet->m_eventDetails.RaceWinner.vehicleIdx);
+            break;
+        }
+        case Retirement: {
+            std::memcpy(&packet->m_eventDetails.Retirement.vehicleIdx, *buffer, sizeof(packet->m_eventDetails.Retirement.vehicleIdx));
+            *buffer += sizeof(packet->m_eventDetails.Retirement.vehicleIdx);
+            bytesRead += sizeof(packet->m_eventDetails.Retirement.vehicleIdx);
+            break;
+        }
+        case DRSEnabled: {
+            break; // no event data to read
+        }
+        case DRSDisabled: {
+            break; // no event data to read
+        }
+        case TeamMateInPits: {
+            std::memcpy(&packet->m_eventDetails.TeamMateInPits.vehicleIdx, *buffer, sizeof(packet->m_eventDetails.TeamMateInPits.vehicleIdx));
+            *buffer += sizeof(packet->m_eventDetails.TeamMateInPits.vehicleIdx);
+            bytesRead += sizeof(packet->m_eventDetails.TeamMateInPits.vehicleIdx);
+            break;
+        }
+        case ChequeredFlag: {
+            break; // no event data to read
+        }
+        case PenaltyIssued: {
+            std::memcpy(&packet->m_eventDetails.Penalty.penaltyType, *buffer, sizeof(packet->m_eventDetails.Penalty.penaltyType));
+            *buffer += sizeof(packet->m_eventDetails.Penalty.penaltyType);
+            bytesRead += sizeof(packet->m_eventDetails.Penalty.penaltyType);
+            std::memcpy(&packet->m_eventDetails.Penalty.infringementType, *buffer, sizeof(packet->m_eventDetails.Penalty.infringementType));
+            *buffer += sizeof(packet->m_eventDetails.Penalty.infringementType);
+            bytesRead += sizeof(packet->m_eventDetails.Penalty.infringementType);
+            std::memcpy(&packet->m_eventDetails.Penalty.vehicleIdx, *buffer, sizeof(packet->m_eventDetails.Penalty.vehicleIdx));
+            *buffer += sizeof(packet->m_eventDetails.Penalty.vehicleIdx);
+            bytesRead += sizeof(packet->m_eventDetails.Penalty.vehicleIdx);
+            std::memcpy(&packet->m_eventDetails.Penalty.otherVehicleIdx, *buffer, sizeof(packet->m_eventDetails.Penalty.otherVehicleIdx));
+            *buffer += sizeof(packet->m_eventDetails.Penalty.otherVehicleIdx);
+            bytesRead += sizeof(packet->m_eventDetails.Penalty.otherVehicleIdx);
+            std::memcpy(&packet->m_eventDetails.Penalty.time, *buffer, sizeof(packet->m_eventDetails.Penalty.time));
+            *buffer += sizeof(packet->m_eventDetails.Penalty.time);
+            bytesRead += sizeof(packet->m_eventDetails.Penalty.time);
+            std::memcpy(&packet->m_eventDetails.Penalty.lapNum, *buffer, sizeof(packet->m_eventDetails.Penalty.lapNum));
+            *buffer += sizeof(packet->m_eventDetails.Penalty.lapNum);
+            bytesRead += sizeof(packet->m_eventDetails.Penalty.lapNum);
+            std::memcpy(&packet->m_eventDetails.Penalty.placesGained, *buffer, sizeof(packet->m_eventDetails.Penalty.placesGained));
+            *buffer += sizeof(packet->m_eventDetails.Penalty.placesGained);
+            bytesRead += sizeof(packet->m_eventDetails.Penalty.placesGained);
+            break;
+        }
+        default: {
+            // raise exception?
+            break;
+        }
+    }
+
+    /* manually set data read as this will be different depending on the event,
+        just have to take the chance of an invalid packet until I can think of
+        a better way of handling this */
+    switch (packet->m_header->m_packetFormat) {
+        case 2020: {
+            bytesRead = 35;
+        }
+        case 2019: {
+            bytesRead = 32;
+        }
+        case 2018: {
+            bytesRead = 25;
+        }
+    }
+
+    return true;
+}
+
+EventCode Decoder::readEventCode(char** buffer) {
+    uint8_t eventStringCode[4];
+    std::memcpy(&eventStringCode[0], *buffer, sizeof(uint8_t));
+    *buffer += sizeof(eventStringCode);
+    bytesRead += sizeof(eventStringCode);
+    std::memcpy(&eventStringCode[1], *buffer, sizeof(uint8_t));
+    *buffer += sizeof(eventStringCode);
+    bytesRead += sizeof(eventStringCode);
+    std::memcpy(&eventStringCode[2], *buffer, sizeof(uint8_t));
+    *buffer += sizeof(eventStringCode);
+    bytesRead += sizeof(eventStringCode);
+    std::memcpy(&eventStringCode[3], *buffer, sizeof(uint8_t));
+    *buffer += sizeof(eventStringCode);
+    bytesRead += sizeof(eventStringCode);
+
+    switch (eventStringCode[0]) {
+        case 0x53: {
+            switch (eventStringCode[1]) {
+                case 0x53: {
+                    return SessionStarted; // SSTA
+                }
+                case 0x45: {
+                    return SessionEnded; // SEND
+                }
+                case 0x50: {
+                    return SpeedTrapTriggered; // SPTP
+                }
+            }
+        }
+        case 0x46: {
+            return FastestLap; // FTLP
+        }
+        case 0x52: {
+            switch (eventStringCode[1]) {
+                case 0x43: {
+                    return RaceWinner; // RCWN
+                }
+                case 0x54: {
+                    return Retirement; // RTMT
+                }
+            }
+        }
+        case 0x44: {
+            switch (eventStringCode[3]) {
+                case 0x45: {
+                    return DRSEnabled; // DRSE
+                }
+                case 0x44: {
+                    return DRSDisabled; // DRSD
+                }
+            }
+        }
+        case 0x54: {
+            return TeamMateInPits; // TMPT
+        }
+        case 0x43: {
+            return ChequeredFlag; // CHQF
+        }
+        case 0x50: {
+            return PenaltyIssued; // PENA
+        }
+    }
+
+    return Unknown;
 }

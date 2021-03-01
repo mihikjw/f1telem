@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstdint>
+#include <string>
 
 /*
     - specs:
@@ -178,6 +179,67 @@ struct LapData {
 struct PacketLapData {
     PacketHeader* m_header;                          // header
     std::array<LapData, F12020_CAR_COUNT> m_lapData; // lap data for all cars on track
+};
+
+/*
+PacketEventData gives details of events that happen during the course of a session
+    - Frequency: When the event occurs
+    - Size: 35 bytes (F12020)
+    - Version: 1
+*/
+union EventDataDetails {
+    struct {
+        uint8_t vehicleIdx; // vehicle index of car achieving fastest lap
+        float lapTime;      // lap time in seconds
+    } FastestLap;
+
+    struct {
+        uint8_t vehicleIdx; // vehicle index of car retiering
+    } Retirement;
+
+    struct {
+        uint8_t vehicleIdx; // vehicle index of team mate
+    } TeamMateInPits;
+
+    struct {
+        uint8_t vehicleIdx; // vehicle index of the race winner
+    } RaceWinner;
+
+    struct {
+        uint8_t penaltyType;      // Penalty type
+        uint8_t infringementType; // Infringement type
+        uint8_t vehicleIdx;       // Vehicle index of the car the penalty is applied to
+        uint8_t otherVehicleIdx;  // Vehicle index of the other car involved
+        uint8_t time;             // Time gained, or time spent doing action in seconds
+        uint8_t lapNum;           // Lap the penalty occurred on
+        uint8_t placesGained;     // Number of places gained by this
+    } Penalty;
+
+    struct {
+        uint8_t vehicleIdx; // Vehicle index of the vehicle triggering speed trap
+        float speed;        // Top speed achieved in kilometres per hour
+    } SpeedTrap;
+};
+
+enum EventCode {
+    SessionStarted,
+    SessionEnded,
+    FastestLap,
+    Retirement,
+    DRSEnabled,
+    DRSDisabled,
+    TeamMateInPits,
+    ChequeredFlag,
+    RaceWinner,
+    PenaltyIssued,
+    SpeedTrapTriggered,
+    Unknown
+};
+
+struct PacketEventData {
+    PacketHeader* m_header;          // Header
+    EventCode m_eventCode;           // library translation from m_eventStringCode
+    EventDataDetails m_eventDetails; // Event details - should be interpreted differently for each type
 };
 
 } // namespace F1Telem

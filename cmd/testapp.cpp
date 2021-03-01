@@ -30,6 +30,7 @@ int main() {
     F1Telem::PacketMotionData motionPacket;
     F1Telem::PacketSessionData sessionPacket;
     F1Telem::PacketLapData lapDataPacket;
+    F1Telem::PacketEventData eventDataPacket;
 
     while ((bytes = reader.Read(buffer)) > 0) {
         if (!buffer) {
@@ -43,7 +44,7 @@ int main() {
             continue;
         }
 
-        std::printf("Packet ID: %d\n", header.m_packetId);
+        // std::printf("Packet ID: %d\n", header.m_packetId);
 
         switch (packetID) {
             case F1Telem::MOTION: {
@@ -59,8 +60,8 @@ int main() {
                 break;
             }
             case F1Telem::EVENT: {
-                decoder.ResetByteCount();
-                continue;
+                decoder.DecodePacketEventData(&buffer, &header, &eventDataPacket);
+                break;
             }
             case F1Telem::PARTICIPANTS: {
                 decoder.ResetByteCount();
