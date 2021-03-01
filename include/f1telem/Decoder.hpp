@@ -13,17 +13,17 @@ class Decoder {
     Decoder() = default;
     ~Decoder() = default;
 
-    uint8_t DecodePacketHeader(char* buffer, PacketHeader* header);
-    bool DecodePacketMotionData(char* buffer, PacketHeader* header, PacketMotionData* packet);
-    bool DecodePacketSessionData(char* buffer, PacketHeader* header, PacketSessionData* packet);
+    uint8_t DecodePacketHeader(char** buffer, PacketHeader* header);
+    bool DecodePacketMotionData(char** buffer, PacketHeader* header, PacketMotionData* packet);
+    bool DecodePacketSessionData(char** buffer, PacketHeader* header, PacketSessionData* packet);
 
     bool ValidateLastPacket(int bytesRecieved);
     void ResetByteCount();
 
     private:
-    CarMotionData* decodeCarMotionData(char* buffer);
-    MarshalZone* decodeMarshalZoneData(char* buffer);
-    WeatherForecastSample* decodeWeatherForecastSampleData(char* buffer);
+    CarMotionData* decodeCarMotionData(char** buffer);
+    MarshalZone* decodeMarshalZoneData(char** buffer);
+    WeatherForecastSample* decodeWeatherForecastSampleData(char** buffer);
     int bytesRead;
 };
 

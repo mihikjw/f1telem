@@ -36,16 +36,16 @@ int main() {
             continue;
         }
 
-        packetID = decoder.DecodePacketHeader(buffer, &header);
+        packetID = decoder.DecodePacketHeader(&buffer, &header);
         std::printf("Packet ID: %d\n", header.m_packetId);
 
         switch (packetID) {
             case F1Telem::MOTION: {
-                decoder.DecodePacketMotionData(buffer, &header, &motionPacket);
+                decoder.DecodePacketMotionData(&buffer, &header, &motionPacket);
                 break;
             }
             case F1Telem::SESSION: {
-                decoder.DecodePacketSessionData(buffer, &header, &sessionPacket);
+                decoder.DecodePacketSessionData(&buffer, &header, &sessionPacket);
                 break;
             }
             case F1Telem::LAP_DATA: {
