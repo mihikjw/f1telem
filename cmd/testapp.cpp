@@ -33,6 +33,7 @@ int main() {
     F1Telem::PacketSessionData sessionPacket;
     F1Telem::PacketLapData lapDataPacket;
     F1Telem::PacketEventData eventDataPacket;
+    F1Telem::PacketParticipantsData participantsDataPacket;
 
     while ((bytes = reader.Read(buffer)) > 0) {
         if (!buffer) {
@@ -66,7 +67,7 @@ int main() {
                 break;
             }
             case F1Telem::PARTICIPANTS: {
-                decoder.ResetByteCount();
+                decoder.DecodePacketParticipantsData(&buffer, &header, &participantsDataPacket);
                 continue;
             }
             case F1Telem::CAR_SETUPS: {

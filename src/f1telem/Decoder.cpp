@@ -500,3 +500,38 @@ EventCode Decoder::readEventCode(char** buffer) {
 
     return Unknown;
 }
+
+bool Decoder::DecodePacketParticipantsData(char** buffer, PacketHeader* header, PacketParticipantsData* packet) {
+    if (!buffer || !header || !*(buffer) || !packet) {
+        return false;
+    }
+
+    packet->m_header = header;
+
+    std::memcpy(&packet->m_numActiveCars, *buffer, sizeof(packet->m_numActiveCars));
+    incrementBuffer(buffer, sizeof(packet->m_numActiveCars));
+    uint8_t carCount = getCarCount(header);
+
+    for (uint8_t i = 0; i < carCount; i++) {
+        decodeParticipantData(buffer, &packet->m_participants[i]);
+    }
+
+    return true;
+}
+
+void Decoder::decodeParticipantData(char** buffer, ParticipantData* data) {
+    std::memcpy(&data->m_aiControlled, *buffer, sizeof(data->m_aiControlled));
+    incrementBuffer(buffer, sizeof(data->m_aiControlled));
+    std::memcpy(&data->m_driverId, *buffer, sizeof(data->m_driverId));
+    incrementBuffer(buffer, sizeof(data->m_driverId));
+    std::memcpy(&data->m_teamId, *buffer, sizeof(data->m_teamId));
+    incrementBuffer(buffer, sizeof(data->m_teamId));
+    std::memcpy(&data->m_raceNumber, *buffer, sizeof(data->m_raceNumber));
+    incrementBuffer(buffer, sizeof(data->m_raceNumber));
+    std::memcpy(&data->m_nationality, *buffer, sizeof(data->m_nationality));
+    incrementBuffer(buffer, sizeof(data->m_nationality));
+    std::memcpy(&data->m_name, *buffer, sizeof(data->m_name));
+    incrementBuffer(buffer, sizeof(data->m_name));
+    std::memcpy(&data->m_yourTelemetry, *buffer, sizeof(data->m_yourTelemetry));
+    incrementBuffer(buffer, sizeof(data->m_yourTelemetry));
+}

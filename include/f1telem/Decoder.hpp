@@ -18,18 +18,22 @@ class Decoder {
     bool DecodePacketSessionData(char** buffer, PacketHeader* header, PacketSessionData* packet);
     bool DecodePacketLapData(char** buffer, PacketHeader* header, PacketLapData* packet);
     bool DecodePacketEventData(char** buffer, PacketHeader* header, PacketEventData* packet);
+    bool DecodePacketParticipantsData(char** buffer, PacketHeader* header, PacketParticipantsData* packet);
 
     bool ValidateLastPacket(int bytesRecieved) noexcept;
     void ResetByteCount() noexcept;
 
     private:
     uint8_t getCarCount(PacketHeader* header) noexcept;
+    EventCode readEventCode(char** buffer);
+
     void incrementBuffer(char** buffer, size_t size);
     void decodeCarMotionData(char** buffer, CarMotionData* data);
     void decodeMarshalZoneData(char** buffer, MarshalZone* data);
     void decodeWeatherForecastSampleData(char** buffer, WeatherForecastSample* data);
     void decodeLapData(char** buffer, PacketHeader* header, LapData* data);
-    EventCode readEventCode(char** buffer);
+    void decodeParticipantData(char** buffer, ParticipantData* data);
+
     int bytesRead;
 };
 

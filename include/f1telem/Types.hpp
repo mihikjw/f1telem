@@ -8,6 +8,9 @@
 /*
     - specs:
         - https://forums.codemasters.com/topic/50942-f1-2020-udp-specification/
+        - https://forums.codemasters.com/topic/44592-f1-2019-udp-specification/
+        - https://forums.codemasters.com/topic/30601-f1-2018-udp-specification/
+        - Legacy spec is not supported, no intention of adding legacy support
     - All values are little-endian
     - All data packed, no padding used
 */
@@ -240,6 +243,30 @@ struct PacketEventData {
     PacketHeader* m_header;          // Header
     EventCode m_eventCode;           // library translation from m_eventStringCode
     EventDataDetails m_eventDetails; // Event details - should be interpreted differently for each type
+};
+
+/*
+PacketParticipantsData is a list of participants in the race. If controlled by AI, this will be the drivers name. If MP, the names will be the SteamID on PC,
+    or the LAN name if appropriate. On Xbox One, the names will always be the driver name, on PS4 the name will be the LAN name if playing a LAN game, otherwise
+    it will be the driver name. The array is indexed by vehicle index.
+    - Frequency: 5 seconds
+    - Size: 1213 bytes (F12020)
+    - Version: 1
+*/
+struct ParticipantData {
+    uint8_t m_aiControlled;  // Whether the vehicle is AI (1) or Human (0) controlled
+    uint8_t m_driverId;      // Driver id
+    uint8_t m_teamId;        // Team id
+    uint8_t m_raceNumber;    // Race number of the car
+    uint8_t m_nationality;   // Nationality of the driver
+    char m_name[48];         // Name of participant in UTF-8 format – null terminated, Will be truncated with … (U+2026) if too long
+    uint8_t m_yourTelemetry; // The player's UDP setting, 0 = restricted, 1 = public
+};
+
+struct PacketParticipantsData {
+    PacketHeader* m_header;  // Header
+    uint8_t m_numActiveCars; // Number of active cars in the data – should match number of cars on HUD
+    std::array<ParticipantData, F12020_CAR_COUNT> m_participants;
 };
 
 } // namespace F1Telem
