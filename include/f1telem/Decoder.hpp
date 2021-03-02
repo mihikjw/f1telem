@@ -24,6 +24,7 @@ class Decoder {
 
     private:
     uint8_t getCarCount(PacketHeader* header) noexcept;
+    void incrementBuffer(char** buffer, size_t size);
     void decodeCarMotionData(char** buffer, CarMotionData* data);
     void decodeMarshalZoneData(char** buffer, MarshalZone* data);
     void decodeWeatherForecastSampleData(char** buffer, WeatherForecastSample* data);

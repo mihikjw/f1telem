@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <memory>
+#include <stdexcept>
 
 #include "f1telem/Decoder.hpp"
 #include "f1telem/Types.hpp"
@@ -14,7 +15,8 @@ int main() {
     auto reader = F1Telem::UDPReader(PORT);
 
     char* buffer = reader.CreateBuffer();
-    if (!buffer) {
+    char* bufferStart = buffer;
+    if (!buffer || !bufferStart) {
         std::printf("Failed To Create Buffer\n");
         return ERR_EXIT;
     }
@@ -44,7 +46,7 @@ int main() {
             continue;
         }
 
-        // std::printf("Packet ID: %d\n", header.m_packetId);
+        std::printf("Packet ID: %d\n", header.m_packetId);
 
         switch (packetID) {
             case F1Telem::MOTION: {
@@ -96,6 +98,8 @@ int main() {
         if (!decoder.ValidateLastPacket(bytes)) {
             std::printf("Packet Failed Validation\n");
         }
+
+        buffer = bufferStart;
     }
 
     std::printf("Shutdown\n");
