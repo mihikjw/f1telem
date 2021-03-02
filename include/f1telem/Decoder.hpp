@@ -19,6 +19,7 @@ class Decoder {
     bool DecodePacketLapData(char** buffer, PacketHeader* header, PacketLapData* packet);
     bool DecodePacketEventData(char** buffer, PacketHeader* header, PacketEventData* packet);
     bool DecodePacketParticipantsData(char** buffer, PacketHeader* header, PacketParticipantsData* packet);
+    bool DecodePacketCarSetupData(char** buffer, PacketHeader* header, PacketCarSetupData* packet);
 
     bool ValidateLastPacket(int bytesRecieved) noexcept;
     void ResetByteCount() noexcept;
@@ -32,7 +33,8 @@ class Decoder {
     void decodeMarshalZoneData(char** buffer, MarshalZone* data);
     void decodeWeatherForecastSampleData(char** buffer, WeatherForecastSample* data);
     void decodeLapData(char** buffer, PacketHeader* header, LapData* data);
-    void decodeParticipantData(char** buffer, ParticipantData* data);
+    void decodeParticipantData(char** buffer, PacketHeader* header, ParticipantData* data);
+    void decodeCarSetupData(char** buffer, PacketHeader* header, CarSetupData* data);
 
     int bytesRead;
 };

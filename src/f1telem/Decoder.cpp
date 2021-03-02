@@ -510,16 +510,17 @@ bool Decoder::DecodePacketParticipantsData(char** buffer, PacketHeader* header, 
 
     std::memcpy(&packet->m_numActiveCars, *buffer, sizeof(packet->m_numActiveCars));
     incrementBuffer(buffer, sizeof(packet->m_numActiveCars));
+
     uint8_t carCount = getCarCount(header);
 
     for (uint8_t i = 0; i < carCount; i++) {
-        decodeParticipantData(buffer, &packet->m_participants[i]);
+        decodeParticipantData(buffer, header, &packet->m_participants[i]);
     }
 
     return true;
 }
 
-void Decoder::decodeParticipantData(char** buffer, ParticipantData* data) {
+void Decoder::decodeParticipantData(char** buffer, PacketHeader* header, ParticipantData* data) {
     std::memcpy(&data->m_aiControlled, *buffer, sizeof(data->m_aiControlled));
     incrementBuffer(buffer, sizeof(data->m_aiControlled));
     std::memcpy(&data->m_driverId, *buffer, sizeof(data->m_driverId));
@@ -532,6 +533,89 @@ void Decoder::decodeParticipantData(char** buffer, ParticipantData* data) {
     incrementBuffer(buffer, sizeof(data->m_nationality));
     std::memcpy(&data->m_name, *buffer, sizeof(data->m_name));
     incrementBuffer(buffer, sizeof(data->m_name));
-    std::memcpy(&data->m_yourTelemetry, *buffer, sizeof(data->m_yourTelemetry));
-    incrementBuffer(buffer, sizeof(data->m_yourTelemetry));
+
+    if (header->m_packetFormat >= 2019) {
+        std::memcpy(&data->m_yourTelemetry, *buffer, sizeof(data->m_yourTelemetry));
+        incrementBuffer(buffer, sizeof(data->m_yourTelemetry));
+    }
+}
+
+bool Decoder::DecodePacketCarSetupData(char** buffer, PacketHeader* header, PacketCarSetupData* packet) {
+    if (!buffer || !header || !*(buffer) || !packet) {
+        return false;
+    }
+
+    packet->m_header = header;
+    uint8_t carCount = getCarCount(header);
+
+    for (uint8_t i = 0; i < carCount; i++) {
+        decodeCarSetupData(buffer, header, &packet->m_carSetups[i]);
+    }
+
+    return true;
+}
+
+void Decoder::decodeCarSetupData(char** buffer, PacketHeader* header, CarSetupData* data) {
+    std::memcpy(&data->m_frontWing, *buffer, sizeof(data->m_frontWing));
+    incrementBuffer(buffer, sizeof(data->m_frontWing));
+    std::memcpy(&data->m_rearWing, *buffer, sizeof(data->m_rearWing));
+    incrementBuffer(buffer, sizeof(data->m_rearWing));
+
+    std::memcpy(&data->m_onThrottle, *buffer, sizeof(data->m_onThrottle));
+    incrementBuffer(buffer, sizeof(data->m_onThrottle));
+    std::memcpy(&data->m_offThrottle, *buffer, sizeof(data->m_offThrottle));
+    incrementBuffer(buffer, sizeof(data->m_offThrottle));
+
+    std::memcpy(&data->m_frontCamber, *buffer, sizeof(data->m_frontCamber));
+    incrementBuffer(buffer, sizeof(data->m_frontCamber));
+    std::memcpy(&data->m_rearCamber, *buffer, sizeof(data->m_rearCamber));
+    incrementBuffer(buffer, sizeof(data->m_rearCamber));
+
+    std::memcpy(&data->m_frontToe, *buffer, sizeof(data->m_frontToe));
+    incrementBuffer(buffer, sizeof(data->m_frontToe));
+    std::memcpy(&data->m_rearToe, *buffer, sizeof(data->m_rearToe));
+    incrementBuffer(buffer, sizeof(data->m_rearToe));
+
+    std::memcpy(&data->m_frontSuspension, *buffer, sizeof(data->m_frontSuspension));
+    incrementBuffer(buffer, sizeof(data->m_frontSuspension));
+    std::memcpy(&data->m_rearSuspension, *buffer, sizeof(data->m_rearSuspension));
+    incrementBuffer(buffer, sizeof(data->m_rearSuspension));
+
+    std::memcpy(&data->m_frontAntiRollBar, *buffer, sizeof(data->m_frontAntiRollBar));
+    incrementBuffer(buffer, sizeof(data->m_frontAntiRollBar));
+    std::memcpy(&data->m_rearAntiRollBar, *buffer, sizeof(data->m_rearAntiRollBar));
+    incrementBuffer(buffer, sizeof(data->m_rearAntiRollBar));
+
+    std::memcpy(&data->m_frontSuspensionHeight, *buffer, sizeof(data->m_frontSuspensionHeight));
+    incrementBuffer(buffer, sizeof(data->m_frontSuspensionHeight));
+    std::memcpy(&data->m_rearSuspensionHeight, *buffer, sizeof(data->m_rearSuspensionHeight));
+    incrementBuffer(buffer, sizeof(data->m_rearSuspensionHeight));
+
+    std::memcpy(&data->m_brakePressure, *buffer, sizeof(data->m_brakePressure));
+    incrementBuffer(buffer, sizeof(data->m_brakePressure));
+    std::memcpy(&data->m_brakeBias, *buffer, sizeof(data->m_brakeBias));
+    incrementBuffer(buffer, sizeof(data->m_brakeBias));
+
+    // F1 2019 and earlier only considers "front" and "rear" pressure, not individual tyres
+    std::memcpy(&data->m_rearLeftTyrePressure, *buffer, sizeof(data->m_rearLeftTyrePressure));
+    incrementBuffer(buffer, sizeof(data->m_rearLeftTyrePressure));
+    if (header->m_packetFormat >= 2020) {
+        std::memcpy(&data->m_rearRightTyrePressure, *buffer, sizeof(data->m_rearRightTyrePressure));
+        incrementBuffer(buffer, sizeof(data->m_rearRightTyrePressure));
+    } else {
+        data->m_rearRightTyrePressure = data->m_rearLeftTyrePressure;
+    }
+    std::memcpy(&data->m_frontLeftTyrePressure, *buffer, sizeof(data->m_frontLeftTyrePressure));
+    incrementBuffer(buffer, sizeof(data->m_frontLeftTyrePressure));
+    if (header->m_packetFormat >= 2020) {
+        std::memcpy(&data->m_frontRightTyrePressure, *buffer, sizeof(data->m_frontRightTyrePressure));
+        incrementBuffer(buffer, sizeof(data->m_frontRightTyrePressure));
+    } else {
+        data->m_frontRightTyrePressure = data->m_frontLeftTyrePressure;
+    }
+
+    std::memcpy(&data->m_ballast, *buffer, sizeof(data->m_ballast));
+    incrementBuffer(buffer, sizeof(data->m_ballast));
+    std::memcpy(&data->m_fuelLoad, *buffer, sizeof(data->m_fuelLoad));
+    incrementBuffer(buffer, sizeof(data->m_fuelLoad));
 }

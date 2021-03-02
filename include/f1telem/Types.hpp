@@ -249,7 +249,7 @@ struct PacketEventData {
 PacketParticipantsData is a list of participants in the race. If controlled by AI, this will be the drivers name. If MP, the names will be the SteamID on PC,
     or the LAN name if appropriate. On Xbox One, the names will always be the driver name, on PS4 the name will be the LAN name if playing a LAN game, otherwise
     it will be the driver name. The array is indexed by vehicle index.
-    - Frequency: 5 seconds
+    - Frequency: every 5 seconds
     - Size: 1213 bytes (F12020)
     - Version: 1
 */
@@ -267,6 +267,43 @@ struct PacketParticipantsData {
     PacketHeader* m_header;  // Header
     uint8_t m_numActiveCars; // Number of active cars in the data – should match number of cars on HUD
     std::array<ParticipantData, F12020_CAR_COUNT> m_participants;
+};
+
+/*
+PacketCarSetupData details the car setups for each vehicle in the session. Note in MP games, other player cars will appear as blank, you can
+    only view your own setup and AI cars
+    - Frequency: 2 per second
+    - Size: 1102 bytes (F12020)
+    - Version: 1
+*/
+struct CarSetupData {
+    uint8_t m_frontWing;             // Front wing aero
+    uint8_t m_rearWing;              // Rear wing aero
+    uint8_t m_onThrottle;            // Differential adjustment on throttle (percentage)
+    uint8_t m_offThrottle;           // Differential adjustment off throttle (percentage)
+    float m_frontCamber;             // Front camber angle (suspension geometry)
+    float m_rearCamber;              // Rear camber angle (suspension geometry)
+    float m_frontToe;                // Front toe angle (suspension geometry)
+    float m_rearToe;                 // Rear toe angle (suspension geometry)
+    uint8_t m_frontSuspension;       // Front suspension
+    uint8_t m_rearSuspension;        // Rear suspension
+    uint8_t m_frontAntiRollBar;      // Front anti-roll bar
+    uint8_t m_rearAntiRollBar;       // Front anti-roll bar
+    uint8_t m_frontSuspensionHeight; // Front ride height
+    uint8_t m_rearSuspensionHeight;  // Rear ride height
+    uint8_t m_brakePressure;         // Brake pressure (percentage)
+    uint8_t m_brakeBias;             // Brake bias (percentage)
+    float m_rearLeftTyrePressure;    // Rear left tyre pressure (PSI)
+    float m_rearRightTyrePressure;   // Rear right tyre pressure (PSI)
+    float m_frontLeftTyrePressure;   // Front left tyre pressure (PSI)
+    float m_frontRightTyrePressure;  // Front right tyre pressure (PSI)
+    uint8_t m_ballast;               // Ballast
+    float m_fuelLoad;                // Fuel load
+};
+
+struct PacketCarSetupData {
+    PacketHeader* m_header; // Header
+    std::array<CarSetupData, F12020_CAR_COUNT> m_carSetups;
 };
 
 } // namespace F1Telem

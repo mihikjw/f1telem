@@ -34,6 +34,7 @@ int main() {
     F1Telem::PacketLapData lapDataPacket;
     F1Telem::PacketEventData eventDataPacket;
     F1Telem::PacketParticipantsData participantsDataPacket;
+    F1Telem::PacketCarSetupData carSetupDataPacket;
 
     while ((bytes = reader.Read(buffer)) > 0) {
         if (!buffer) {
@@ -68,11 +69,11 @@ int main() {
             }
             case F1Telem::PARTICIPANTS: {
                 decoder.DecodePacketParticipantsData(&buffer, &header, &participantsDataPacket);
-                continue;
+                break;
             }
             case F1Telem::CAR_SETUPS: {
-                decoder.ResetByteCount();
-                continue;
+                decoder.DecodePacketCarSetupData(&buffer, &header, &carSetupDataPacket);
+                break;
             }
             case F1Telem::CAR_TELEMETRY: {
                 decoder.ResetByteCount();
