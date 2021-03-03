@@ -36,6 +36,7 @@ int main() {
     F1Telem::PacketParticipantsData participantsDataPacket;
     F1Telem::PacketCarSetupData carSetupDataPacket;
     F1Telem::PacketCarTelemetryData carTelemetryDataPacket;
+    F1Telem::PacketCarStatusData carStatusDataPacket;
 
     while ((bytes = reader.Read(buffer)) > 0) {
         if (!buffer) {
@@ -81,8 +82,8 @@ int main() {
                 break;
             }
             case F1Telem::CAR_STATUS: {
-                decoder.ResetByteCount();
-                continue;
+                decoder.DecodePacketCarStatusData(&buffer, &header, &carStatusDataPacket);
+                break;
             }
             case F1Telem::FINAL_CLASSIFICATION: {
                 decoder.ResetByteCount();

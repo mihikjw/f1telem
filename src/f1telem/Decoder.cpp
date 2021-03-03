@@ -643,6 +643,8 @@ bool Decoder::DecodePacketCarTelemetryData(char** buffer, PacketHeader* header, 
         std::memcpy(&packet->m_suggestedGear, *buffer, sizeof(packet->m_suggestedGear));
         incrementBuffer(buffer, sizeof(packet->m_suggestedGear));
     }
+
+    return true;
 }
 
 void Decoder::decodeCarTelemetryData(char** buffer, PacketHeader* header, CarTelemetryData* data) {
@@ -694,4 +696,116 @@ void Decoder::decodeCarTelemetryData(char** buffer, PacketHeader* header, CarTel
             incrementBuffer(buffer, sizeof(uint8_t));
         }
     }
+}
+
+bool Decoder::DecodePacketCarStatusData(char** buffer, PacketHeader* header, PacketCarStatusData* packet) {
+    if (!buffer || !header || !*(buffer) || !packet) {
+        return false;
+    }
+
+    packet->m_header = header;
+    uint8_t carCount = getCarCount(header);
+
+    for (uint8_t i = 0; i < carCount; i++) {
+        decodeCarStatusData(buffer, header, &packet->m_carStatusData[i]);
+    }
+
+    return true;
+}
+
+void Decoder::decodeCarStatusData(char** buffer, PacketHeader* header, CarStatusData* data) {
+    std::memcpy(&data->m_tractionControl, *buffer, sizeof(data->m_tractionControl));
+    incrementBuffer(buffer, sizeof(data->m_tractionControl));
+    std::memcpy(&data->m_antiLockBrakes, *buffer, sizeof(data->m_antiLockBrakes));
+    incrementBuffer(buffer, sizeof(data->m_antiLockBrakes));
+    std::memcpy(&data->m_fuelMix, *buffer, sizeof(data->m_fuelMix));
+    incrementBuffer(buffer, sizeof(data->m_fuelMix));
+    std::memcpy(&data->m_frontBrakeBias, *buffer, sizeof(data->m_frontBrakeBias));
+    incrementBuffer(buffer, sizeof(data->m_frontBrakeBias));
+    std::memcpy(&data->m_pitLimiterStatus, *buffer, sizeof(data->m_pitLimiterStatus));
+    incrementBuffer(buffer, sizeof(data->m_pitLimiterStatus));
+    std::memcpy(&data->m_fuelInTank, *buffer, sizeof(data->m_fuelInTank));
+    incrementBuffer(buffer, sizeof(data->m_fuelInTank));
+    std::memcpy(&data->m_fuelCapacity, *buffer, sizeof(data->m_fuelCapacity));
+    incrementBuffer(buffer, sizeof(data->m_fuelCapacity));
+
+    if (header->m_packetFormat >= 2019) {
+        std::memcpy(&data->m_fuelRemainingLaps, *buffer, sizeof(data->m_fuelRemainingLaps));
+        incrementBuffer(buffer, sizeof(data->m_fuelRemainingLaps));
+    }
+
+    std::memcpy(&data->m_maxRPM, *buffer, sizeof(data->m_maxRPM));
+    incrementBuffer(buffer, sizeof(data->m_maxRPM));
+    std::memcpy(&data->m_idleRPM, *buffer, sizeof(data->m_idleRPM));
+    incrementBuffer(buffer, sizeof(data->m_idleRPM));
+    std::memcpy(&data->m_maxGears, *buffer, sizeof(data->m_maxGears));
+    incrementBuffer(buffer, sizeof(data->m_maxGears));
+    std::memcpy(&data->m_drsAllowed, *buffer, sizeof(data->m_drsAllowed));
+    incrementBuffer(buffer, sizeof(data->m_drsAllowed));
+
+    if (header->m_packetFormat >= 2020) {
+        std::memcpy(&data->m_drsActivationDistance, *buffer, sizeof(data->m_drsActivationDistance));
+        incrementBuffer(buffer, sizeof(data->m_drsActivationDistance));
+    }
+
+    for (uint8_t i = 0; i < 4; i++) {
+        std::memcpy(&data->m_tyresWear[i], *buffer, sizeof(uint8_t));
+        incrementBuffer(buffer, sizeof(uint8_t));
+    }
+
+    std::memcpy(&data->m_actualTyreCompound, *buffer, sizeof(data->m_actualTyreCompound));
+    incrementBuffer(buffer, sizeof(data->m_actualTyreCompound));
+
+    if (header->m_packetFormat >= 2019) {
+        std::memcpy(&data->m_visualTyreCompound, *buffer, sizeof(data->m_visualTyreCompound));
+        incrementBuffer(buffer, sizeof(data->m_visualTyreCompound));
+    } else {
+        data->m_visualTyreCompound = data->m_actualTyreCompound;
+    }
+
+    if (header->m_packetFormat >= 2020) {
+        std::memcpy(&data->m_tyresAgeLaps, *buffer, sizeof(data->m_tyresAgeLaps));
+        incrementBuffer(buffer, sizeof(data->m_tyresAgeLaps));
+    }
+
+    for (uint8_t i = 0; i < 4; i++) {
+        std::memcpy(&data->m_tyresDamage[i], *buffer, sizeof(uint8_t));
+        incrementBuffer(buffer, sizeof(uint8_t));
+    }
+
+    std::memcpy(&data->m_frontLeftWingDamage, *buffer, sizeof(data->m_frontLeftWingDamage));
+    incrementBuffer(buffer, sizeof(data->m_frontLeftWingDamage));
+    std::memcpy(&data->m_frontRightWingDamage, *buffer, sizeof(data->m_frontRightWingDamage));
+    incrementBuffer(buffer, sizeof(data->m_frontRightWingDamage));
+    std::memcpy(&data->m_rearWingDamage, *buffer, sizeof(data->m_rearWingDamage));
+    incrementBuffer(buffer, sizeof(data->m_rearWingDamage));
+    std::memcpy(&data->m_drsFault, *buffer, sizeof(data->m_drsFault));
+
+    if (header->m_packetFormat >= 2020) {
+        incrementBuffer(buffer, sizeof(data->m_drsFault));
+        std::memcpy(&data->m_engineDamage, *buffer, sizeof(data->m_engineDamage));
+    }
+
+    incrementBuffer(buffer, sizeof(data->m_engineDamage));
+    std::memcpy(&data->m_gearBoxDamage, *buffer, sizeof(data->m_gearBoxDamage));
+    incrementBuffer(buffer, sizeof(data->m_gearBoxDamage));
+
+    // exhaust damage goes here - not worth adding as a field in the struct as it's misleading for
+    //  all future versions, and these should take priority
+    if (header->m_packetFormat == 2018) {
+        incrementBuffer(buffer, sizeof(uint8_t));
+    }
+
+    std::memcpy(&data->m_vehicleFiaFlags, *buffer, sizeof(data->m_vehicleFiaFlags));
+    incrementBuffer(buffer, sizeof(data->m_vehicleFiaFlags));
+    std::memcpy(&data->m_ersStoreEnergy, *buffer, sizeof(data->m_ersStoreEnergy));
+    incrementBuffer(buffer, sizeof(data->m_ersStoreEnergy));
+    std::memcpy(&data->m_ersDeployMode, *buffer, sizeof(data->m_ersDeployMode));
+    incrementBuffer(buffer, sizeof(data->m_ersDeployMode));
+    std::memcpy(&data->m_ersHarvestedThisLapMGUK, *buffer, sizeof(data->m_ersHarvestedThisLapMGUK));
+    incrementBuffer(buffer, sizeof(data->m_ersHarvestedThisLapMGUK));
+    std::memcpy(&data->m_ersHarvestedThisLapMGUH, *buffer, sizeof(data->m_ersHarvestedThisLapMGUH));
+    incrementBuffer(buffer, sizeof(data->m_ersHarvestedThisLapMGUH));
+    std::memcpy(&data->m_ersDeployedThisLap, *buffer, sizeof(data->m_ersDeployedThisLap));
+    incrementBuffer(buffer, sizeof(data->m_ersDeployedThisLap));
 }
