@@ -619,3 +619,79 @@ void Decoder::decodeCarSetupData(char** buffer, PacketHeader* header, CarSetupDa
     std::memcpy(&data->m_fuelLoad, *buffer, sizeof(data->m_fuelLoad));
     incrementBuffer(buffer, sizeof(data->m_fuelLoad));
 }
+
+bool Decoder::DecodePacketCarTelemetryData(char** buffer, PacketHeader* header, PacketCarTelemetryData* packet) {
+    if (!buffer || !header || !*(buffer) || !packet) {
+        return false;
+    }
+
+    packet->m_header = header;
+    uint8_t carCount = getCarCount(header);
+
+    for (uint8_t i = 0; i < carCount; i++) {
+        decodeCarTelemetryData(buffer, header, &packet->m_carTelemetryData[i]);
+    }
+
+    std::memcpy(&packet->m_buttonStatus, *buffer, sizeof(packet->m_buttonStatus));
+    incrementBuffer(buffer, sizeof(packet->m_buttonStatus));
+
+    if (header->m_packetFormat >= 2020) {
+        std::memcpy(&packet->m_mfdPanelIndex, *buffer, sizeof(packet->m_mfdPanelIndex));
+        incrementBuffer(buffer, sizeof(packet->m_mfdPanelIndex));
+        std::memcpy(&packet->m_mfdPanelIndexSecondaryPlayer, *buffer, sizeof(packet->m_mfdPanelIndexSecondaryPlayer));
+        incrementBuffer(buffer, sizeof(packet->m_mfdPanelIndexSecondaryPlayer));
+        std::memcpy(&packet->m_suggestedGear, *buffer, sizeof(packet->m_suggestedGear));
+        incrementBuffer(buffer, sizeof(packet->m_suggestedGear));
+    }
+}
+
+void Decoder::decodeCarTelemetryData(char** buffer, PacketHeader* header, CarTelemetryData* data) {
+    std::memcpy(&data->m_speed, *buffer, sizeof(data->m_speed));
+    incrementBuffer(buffer, sizeof(data->m_speed));
+    std::memcpy(&data->m_throttle, *buffer, sizeof(data->m_throttle));
+    incrementBuffer(buffer, sizeof(data->m_throttle));
+    std::memcpy(&data->m_steer, *buffer, sizeof(data->m_steer));
+    incrementBuffer(buffer, sizeof(data->m_steer));
+    std::memcpy(&data->m_brake, *buffer, sizeof(data->m_brake));
+    incrementBuffer(buffer, sizeof(data->m_brake));
+    std::memcpy(&data->m_clutch, *buffer, sizeof(data->m_clutch));
+    incrementBuffer(buffer, sizeof(data->m_clutch));
+    std::memcpy(&data->m_gear, *buffer, sizeof(data->m_gear));
+    incrementBuffer(buffer, sizeof(data->m_gear));
+    std::memcpy(&data->m_engineRPM, *buffer, sizeof(data->m_engineRPM));
+    incrementBuffer(buffer, sizeof(data->m_engineRPM));
+    std::memcpy(&data->m_drs, *buffer, sizeof(data->m_drs));
+    incrementBuffer(buffer, sizeof(data->m_drs));
+    std::memcpy(&data->m_revLightsPercent, *buffer, sizeof(data->m_revLightsPercent));
+    incrementBuffer(buffer, sizeof(data->m_revLightsPercent));
+
+    for (uint8_t i = 0; i < 4; i++) {
+        std::memcpy(&data->m_brakesTemperature[i], *buffer, sizeof(uint16_t));
+        incrementBuffer(buffer, sizeof(uint16_t));
+    }
+
+    for (uint8_t i = 0; i < 4; i++) {
+        std::memcpy(&data->m_tyresSurfaceTemperature[i], *buffer, sizeof(uint8_t));
+        incrementBuffer(buffer, sizeof(uint8_t));
+    }
+
+    for (uint8_t i = 0; i < 4; i++) {
+        std::memcpy(&data->m_tyresInnerTemperature[i], *buffer, sizeof(uint8_t));
+        incrementBuffer(buffer, sizeof(uint8_t));
+    }
+
+    std::memcpy(&data->m_engineTemperature, *buffer, sizeof(data->m_engineTemperature));
+    incrementBuffer(buffer, sizeof(data->m_engineTemperature));
+
+    for (uint8_t i = 0; i < 4; i++) {
+        std::memcpy(&data->m_tyresPressure[i], *buffer, sizeof(float));
+        incrementBuffer(buffer, sizeof(float));
+    }
+
+    if (header->m_packetFormat >= 2019) {
+        for (uint8_t i = 0; i < 4; i++) {
+            std::memcpy(&data->m_surfaceType[i], *buffer, sizeof(uint8_t));
+            incrementBuffer(buffer, sizeof(uint8_t));
+        }
+    }
+}

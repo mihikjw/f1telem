@@ -35,6 +35,7 @@ int main() {
     F1Telem::PacketEventData eventDataPacket;
     F1Telem::PacketParticipantsData participantsDataPacket;
     F1Telem::PacketCarSetupData carSetupDataPacket;
+    F1Telem::PacketCarTelemetryData carTelemetryDataPacket;
 
     while ((bytes = reader.Read(buffer)) > 0) {
         if (!buffer) {
@@ -76,8 +77,8 @@ int main() {
                 break;
             }
             case F1Telem::CAR_TELEMETRY: {
-                decoder.ResetByteCount();
-                continue;
+                decoder.DecodePacketCarTelemetryData(&buffer, &header, &carTelemetryDataPacket);
+                break;
             }
             case F1Telem::CAR_STATUS: {
                 decoder.ResetByteCount();
@@ -105,4 +106,5 @@ int main() {
     }
 
     std::printf("Shutdown\n");
+    return SUCCESS_EXIT;
 }
