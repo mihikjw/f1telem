@@ -389,6 +389,36 @@ struct PacketCarStatusData {
     std::array<CarStatusData, F12020_CAR_COUNT> m_carStatusData;
 };
 
+/*
+PacketFinalClassificationData contains details on the final classification at the end of the race, and the data will match
+    with the post-race results screen. This is especially useful for multiplayer games where it is not always possible to
+    send lap times on the final frame because of network delay.
+    - Frequency: Once at the end of a race
+    - Size: 830 bytes (F1 2020)
+    - Version: 1
+*/
+struct FinalClassificationData {
+    uint8_t m_position;      // Finishing position
+    uint8_t m_numLaps;       // Number of laps completed
+    uint8_t m_gridPosition;  // Grid position of the car
+    uint8_t m_points;        // Number of points scored
+    uint8_t m_numPitStops;   // Number of pit stops made
+    uint8_t m_resultStatus;  // Result status - 0 = invalid, 1 = inactive, 2 = active, 3 = finished, 4 = disqualified, 5 = not classified, 6 = retired
+    float m_bestLapTime;     // Best lap time of the session in seconds
+    double m_totalRaceTime;  // Total race time in seconds without penalties
+    uint8_t m_penaltiesTime; // Total penalties accumulated in seconds
+    uint8_t m_numPenalties;  // Number of penalties applied to this driver
+    uint8_t m_numTyreStints; // Number of tyres stints up to maximum
+    std::array<uint8_t, 8> m_tyreStintsActual; // Actual tyres used by this driver
+    std::array<uint8_t, 8> m_tyreStintsVisual; // Visual tyres used by this driver
+};
+
+struct PacketFinalClassificationData {
+    PacketHeader* m_header;
+    uint8_t m_numCars; // Number of cars in the final classification
+    std::array<FinalClassificationData, F12020_CAR_COUNT> m_classificationData;
+};
+
 } // namespace F1Telem
 
 #endif // F1TELEM_F12020_TYPES_HPP

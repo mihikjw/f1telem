@@ -809,3 +809,56 @@ void Decoder::decodeCarStatusData(char** buffer, PacketHeader* header, CarStatus
     std::memcpy(&data->m_ersDeployedThisLap, *buffer, sizeof(data->m_ersDeployedThisLap));
     incrementBuffer(buffer, sizeof(data->m_ersDeployedThisLap));
 }
+
+bool Decoder::DecodePacketFinalClassificationData(char** buffer, PacketHeader* header, PacketFinalClassificationData* packet) {
+    if (!buffer || !header || !*(buffer) || !packet) {
+        return false;
+    }
+
+    packet->m_header = header;
+    uint8_t carCount = getCarCount(header);
+
+    std::memcpy(&packet->m_numCars, *buffer, sizeof(packet->m_numCars));
+    incrementBuffer(buffer, sizeof(packet->m_numCars));
+
+    for (uint8_t i = 0; i < carCount; i++) {
+        decodeFinalClassificationData(buffer, &packet->m_classificationData[i]);
+    }
+
+    return true;
+}
+
+void Decoder::decodeFinalClassificationData(char** buffer, FinalClassificationData* data) {
+    std::memcpy(&data->m_position, *buffer, sizeof(data->m_position));
+    incrementBuffer(buffer, sizeof(data->m_position));
+    std::memcpy(&data->m_numLaps, *buffer, sizeof(data->m_numLaps));
+    incrementBuffer(buffer, sizeof(data->m_numLaps));
+    std::memcpy(&data->m_gridPosition, *buffer, sizeof(data->m_gridPosition));
+    incrementBuffer(buffer, sizeof(data->m_gridPosition));
+    std::memcpy(&data->m_points, *buffer, sizeof(data->m_points));
+    incrementBuffer(buffer, sizeof(data->m_points));
+    std::memcpy(&data->m_numPitStops, *buffer, sizeof(data->m_numPitStops));
+    incrementBuffer(buffer, sizeof(data->m_numPitStops));
+    std::memcpy(&data->m_resultStatus, *buffer, sizeof(data->m_resultStatus));
+    incrementBuffer(buffer, sizeof(data->m_resultStatus));
+    std::memcpy(&data->m_bestLapTime, *buffer, sizeof(data->m_bestLapTime));
+    incrementBuffer(buffer, sizeof(data->m_bestLapTime));
+    std::memcpy(&data->m_totalRaceTime, *buffer, sizeof(data->m_totalRaceTime));
+    incrementBuffer(buffer, sizeof(data->m_totalRaceTime));
+    std::memcpy(&data->m_penaltiesTime, *buffer, sizeof(data->m_penaltiesTime));
+    incrementBuffer(buffer, sizeof(data->m_penaltiesTime));
+    std::memcpy(&data->m_numPenalties, *buffer, sizeof(data->m_numPenalties));
+    incrementBuffer(buffer, sizeof(data->m_numPenalties));
+    std::memcpy(&data->m_numTyreStints, *buffer, sizeof(data->m_numTyreStints));
+    incrementBuffer(buffer, sizeof(data->m_numTyreStints));
+
+    for (uint8_t i = 0; i < 8; i++) {
+        std::memcpy(&data->m_tyreStintsActual[i], *buffer, sizeof(uint8_t));
+        incrementBuffer(buffer, sizeof(uint8_t));
+    }
+
+    for (uint8_t i = 0; i < 8; i++) {
+        std::memcpy(&data->m_tyreStintsVisual[i], *buffer, sizeof(uint8_t));
+        incrementBuffer(buffer, sizeof(uint8_t));
+    }
+}
