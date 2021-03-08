@@ -23,11 +23,11 @@ class UDPReader : public Reader {
     int Read(char* buffer) final; // returns bytes read
 
     private:
-    int sock;
-
 #ifdef __linux__
+    int sock;
     struct sockaddr_in serverAddr;
 #elif _WIN32
+    SOCKET sock;
     SOCKADDR_IN serverAddress;
 #endif
 };

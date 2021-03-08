@@ -24,9 +24,7 @@ UDPReader::UDPReader(const int port) {
     serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 
     WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        // WSAGetLastError();
-    }
+    WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
 }
 
@@ -35,11 +33,11 @@ UDPReader::~UDPReader() { Close(); }
 bool UDPReader::Close() {
 #ifdef _WIN32
     if (closesocket(sock) != 0) {
-        // WSAGetLastError();
+        return false;
     }
 
     if (WSACleanup() != 0) {
-        // WSAGetLastError();
+        return false;
     }
 #endif
 
@@ -62,7 +60,6 @@ bool UDPReader::Open() {
 #elif _WIN32
     sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sock == INVALID_SOCKET) {
-        // WSAGetLastError();
         WSACleanup();
         return false;
     }
@@ -70,7 +67,6 @@ bool UDPReader::Open() {
     if (bind(sock, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
         closesocket(sock);
         WSACleanup();
-        // WSAGetLastError();
         return false;
     }
 #endif
@@ -85,10 +81,5 @@ int UDPReader::Read(char* buffer) {
     }
 
     std::memset(buffer, 0, UDP_BUFFER_SIZE);
-
-#ifdef __linux__
-    return recvfrom(sock, buffer, UDP_BUFFER_SIZE, MSG_WAITALL, nullptr, nullptr);
-#elif _WIN32
     return recvfrom(sock, buffer, UDP_BUFFER_SIZE, 0, nullptr, nullptr);
-#endif
 }

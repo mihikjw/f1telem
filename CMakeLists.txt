@@ -19,6 +19,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 # libf1telem
 file(GLOB LIBF1TELEM_SRC "${CMAKE_BINARY_DIR}/src/f1telem/*.cpp" "${CMAKE_BINARY_DIR}/src/f1telem/f12020/*.cpp")
 add_library(libf1telem STATIC ${LIBF1TELEM_SRC})
+if(WIN32)
+  target_link_libraries(libf1telem wsock32 ws2_32)
+endif()
 set_target_properties(libf1telem PROPERTIES LINKER_LANGUAGE CXX)
 # ---------------------------------
 

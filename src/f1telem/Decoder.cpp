@@ -355,10 +355,10 @@ bool Decoder::DecodePacketEventData(char** buffer, PacketHeader* header, PacketE
 
     switch (packet->m_eventCode) {
         case SessionStarted: {
-            break; // no event data to read
+            break;
         }
         case SessionEnded: {
-            break; // no event data to read
+            break;
         }
         case SpeedTrapTriggered: {
             std::memcpy(&packet->m_eventDetails.SpeedTrap.vehicleIdx, *buffer, sizeof(packet->m_eventDetails.SpeedTrap.vehicleIdx));
@@ -385,10 +385,10 @@ bool Decoder::DecodePacketEventData(char** buffer, PacketHeader* header, PacketE
             break;
         }
         case DRSEnabled: {
-            break; // no event data to read
+            break;
         }
         case DRSDisabled: {
-            break; // no event data to read
+            break;
         }
         case TeamMateInPits: {
             std::memcpy(&packet->m_eventDetails.TeamMateInPits.vehicleIdx, *buffer, sizeof(packet->m_eventDetails.TeamMateInPits.vehicleIdx));
@@ -396,7 +396,7 @@ bool Decoder::DecodePacketEventData(char** buffer, PacketHeader* header, PacketE
             break;
         }
         case ChequeredFlag: {
-            break; // no event data to read
+            break;
         }
         case PenaltyIssued: {
             std::memcpy(&packet->m_eventDetails.Penalty.penaltyType, *buffer, sizeof(packet->m_eventDetails.Penalty.penaltyType));
@@ -416,7 +416,6 @@ bool Decoder::DecodePacketEventData(char** buffer, PacketHeader* header, PacketE
             break;
         }
         default: {
-            // raise exception?
             break;
         }
     }
