@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <string>
 
+#include "f1telem/Defines.hpp"
+
 /*
     - specs:
         - https://forums.codemasters.com/topic/50942-f1-2020-udp-specification/
@@ -30,22 +32,6 @@ struct PacketHeader {
     uint8_t m_playerCarIndex;          // index of players car in array
     uint8_t m_secondaryPlayerCarIndex; // 255 if no split screen
 };
-
-// PacketID's used to identify the 'm_packetId' field in the PacketHeader
-constexpr uint8_t MOTION = 0;
-constexpr uint8_t SESSION = 1;
-constexpr uint8_t LAP_DATA = 2;
-constexpr uint8_t EVENT = 3;
-constexpr uint8_t PARTICIPANTS = 4;
-constexpr uint8_t CAR_SETUPS = 5;
-constexpr uint8_t CAR_TELEMETRY = 6;
-constexpr uint8_t CAR_STATUS = 7;
-constexpr uint8_t FINAL_CLASSIFICATION = 8;
-constexpr uint8_t LOBBY_INFO = 9;
-
-// car counts are the number of supported cars, changed in F12020
-constexpr uint8_t F12020_CAR_COUNT = 22;
-constexpr uint8_t LEGACY_CAR_COUNT = 20;
 
 /*
 PacketMotionData gives physics data for all cars being driven. There is additional data for the car being driven.

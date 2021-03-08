@@ -55,43 +55,43 @@ int main() {
         std::printf("Packet ID: %d\n", header.m_packetId);
 
         switch (packetID) {
-            case F1Telem::MOTION: {
+            case F1Telem::PacketID::Motion: {
                 decoder.DecodePacketMotionData(&buffer, &header, &motionPacket);
                 break;
             }
-            case F1Telem::SESSION: {
+            case F1Telem::PacketID::Session: {
                 decoder.DecodePacketSessionData(&buffer, &header, &sessionPacket);
                 break;
             }
-            case F1Telem::LAP_DATA: {
+            case F1Telem::PacketID::LapData: {
                 decoder.DecodePacketLapData(&buffer, &header, &lapDataPacket);
                 break;
             }
-            case F1Telem::EVENT: {
+            case F1Telem::PacketID::Event: {
                 decoder.DecodePacketEventData(&buffer, &header, &eventDataPacket);
                 break;
             }
-            case F1Telem::PARTICIPANTS: {
+            case F1Telem::PacketID::Participants: {
                 decoder.DecodePacketParticipantsData(&buffer, &header, &participantsDataPacket);
                 break;
             }
-            case F1Telem::CAR_SETUPS: {
+            case F1Telem::PacketID::CarSetups: {
                 decoder.DecodePacketCarSetupData(&buffer, &header, &carSetupDataPacket);
                 break;
             }
-            case F1Telem::CAR_TELEMETRY: {
+            case F1Telem::PacketID::CarTelemetry: {
                 decoder.DecodePacketCarTelemetryData(&buffer, &header, &carTelemetryDataPacket);
                 break;
             }
-            case F1Telem::CAR_STATUS: {
+            case F1Telem::PacketID::CarStatus: {
                 decoder.DecodePacketCarStatusData(&buffer, &header, &carStatusDataPacket);
                 break;
             }
-            case F1Telem::FINAL_CLASSIFICATION: {
+            case F1Telem::PacketID::FinalClassification: {
                 decoder.DecodePacketFinalClassificationData(&buffer, &header, &finalClassificationDataPacket);
                 break;
             }
-            case F1Telem::LOBBY_INFO: {
+            case F1Telem::PacketID::LobbyInfo: {
                 decoder.DecodeLobbyInfoData(&buffer, &header, &packetLobbyInfoData);
                 break;
             }
