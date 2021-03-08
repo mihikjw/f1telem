@@ -38,6 +38,7 @@ int main() {
     F1Telem::PacketCarTelemetryData carTelemetryDataPacket;
     F1Telem::PacketCarStatusData carStatusDataPacket;
     F1Telem::PacketFinalClassificationData finalClassificationDataPacket;
+    F1Telem::PacketLobbyInfoData packetLobbyInfoData;
 
     while ((bytes = reader.Read(buffer)) > 0) {
         if (!buffer) {
@@ -91,8 +92,8 @@ int main() {
                 break;
             }
             case F1Telem::LOBBY_INFO: {
-                decoder.ResetByteCount();
-                continue;
+                decoder.DecodeLobbyInfoData(&buffer, &header, &packetLobbyInfoData);
+                break;
             }
             default: {
                 decoder.ResetByteCount();

@@ -862,3 +862,34 @@ void Decoder::decodeFinalClassificationData(char** buffer, FinalClassificationDa
         incrementBuffer(buffer, sizeof(uint8_t));
     }
 }
+
+bool Decoder::DecodeLobbyInfoData(char** buffer, PacketHeader* header, PacketLobbyInfoData* packet) {
+    if (!buffer || !header || !*(buffer) || !packet) {
+        return false;
+    }
+
+    packet->m_header = header;
+    uint8_t carCount = getCarCount(header);
+
+    std::memcpy(&packet->m_numPlayers, *buffer, sizeof(packet->m_numPlayers));
+    incrementBuffer(buffer, sizeof(packet->m_numPlayers));
+
+    for (uint8_t i = 0; i < carCount; i++) {
+        decodeLobbyInfoData(buffer, &packet->m_lobbyPlayers[i]);
+    }
+
+    return true;
+}
+
+void Decoder::decodeLobbyInfoData(char** buffer, LobbyInfoData* data) {
+    std::memcpy(&data->m_aiControlled, *buffer, sizeof(data->m_aiControlled));
+    incrementBuffer(buffer, sizeof(data->m_aiControlled));
+    std::memcpy(&data->m_teamId, *buffer, sizeof(data->m_teamId));
+    incrementBuffer(buffer, sizeof(data->m_teamId));
+    std::memcpy(&data->m_nationality, *buffer, sizeof(data->m_nationality));
+    incrementBuffer(buffer, sizeof(data->m_nationality));
+    std::memcpy(&data->m_name, *buffer, sizeof(data->m_name));
+    incrementBuffer(buffer, sizeof(data->m_name));
+    std::memcpy(&data->m_readyStatus, *buffer, sizeof(data->m_readyStatus));
+    incrementBuffer(buffer, sizeof(data->m_readyStatus));
+}

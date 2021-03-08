@@ -419,6 +419,27 @@ struct PacketFinalClassificationData {
     std::array<FinalClassificationData, F12020_CAR_COUNT> m_classificationData;
 };
 
+/*
+PacketLobbyInfoData details the players currently in a multiplayer lobby. It details each players selected car,
+    any AI involved in the game and also the ready status of each of the participants.
+    - Frequency: Two every second when in the lobby
+    - Size: 1169 bytes (F12020)
+    - Version: 1
+*/
+struct LobbyInfoData {
+    uint8_t m_aiControlled; // Whether the vehicle is AI (1) or Human (0) controlled
+    uint8_t m_teamId;       // Team id - see appendix (255 if no team currently selected)
+    uint8_t m_nationality;  // Nationality of the driver
+    char m_name[48];        // Name of participant in UTF-8 format – null terminated, will be truncated with ... (U+2026) if too long
+    uint8_t m_readyStatus;  // 0 = not ready, 1 = ready, 2 = spectating
+};
+
+struct PacketLobbyInfoData {
+    PacketHeader* m_header;
+    uint8_t m_numPlayers; // Number of players in the lobby data
+    std::array<LobbyInfoData, F12020_CAR_COUNT> m_lobbyPlayers;
+};
+
 } // namespace F1Telem
 
 #endif // F1TELEM_F12020_TYPES_HPP
