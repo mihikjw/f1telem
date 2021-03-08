@@ -19,13 +19,30 @@ UDPReader::UDPReader(const int port) {
     serverAddr.sin_addr.s_addr = INADDR_ANY;
     serverAddr.sin_port = htons(port);
 #elif _WIN32
-    // not yet implemented
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_port = htons(port);
+    serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        // WSAGetLastError();
+    }
 #endif
 }
 
 UDPReader::~UDPReader() { Close(); }
 
 bool UDPReader::Close() {
+#ifdef _WIN32
+    if (closesocket(sock) != 0) {
+        // WSAGetLastError();
+    }
+
+    if (WSACleanup() != 0) {
+        // WSAGetLastError();
+    }
+#endif
+
     open = false;
     return true;
 }
@@ -43,7 +60,19 @@ bool UDPReader::Open() {
         return false;
     }
 #elif _WIN32
-    // not yet implemented
+    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (sock == INVALID_SOCKET) {
+        // WSAGetLastError();
+        WSACleanup();
+        return false;
+    }
+
+    if (bind(sock, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
+        closesocket(sock);
+        WSACleanup();
+        // WSAGetLastError();
+        return false;
+    }
 #endif
 
     open = true;
@@ -60,6 +89,6 @@ int UDPReader::Read(char* buffer) {
 #ifdef __linux__
     return recvfrom(sock, buffer, UDP_BUFFER_SIZE, MSG_WAITALL, nullptr, nullptr);
 #elif _WIN32
-    // not yet implemented
+    return recvfrom(sock, buffer, UDP_BUFFER_SIZE, 0, nullptr, nullptr);
 #endif
 }

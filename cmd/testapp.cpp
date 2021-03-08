@@ -6,6 +6,10 @@
 #include "f1telem/Types.hpp"
 #include "f1telem/UDPReader.hpp"
 
+/*
+Quick and dirty test application for recieving and decoding UDP data
+*/
+
 constexpr int SUCCESS_EXIT = 0;
 constexpr int ERR_EXIT = 1;
 
@@ -13,7 +17,6 @@ constexpr int PORT = 20777;
 
 int main() {
     auto reader = F1Telem::UDPReader(PORT);
-
     char* buffer = reader.CreateBuffer();
     char* bufferStart = buffer;
     if (!buffer || !bufferStart) {
@@ -109,5 +112,6 @@ int main() {
     }
 
     std::printf("Shutdown\n");
+    delete buffer;
     return SUCCESS_EXIT;
 }
