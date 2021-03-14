@@ -19,6 +19,9 @@
 
 namespace F1Telem {
 
+// UDP_BUFFER_SIZE is the maximum required size of a buffer to recieve the largest packet
+constexpr int UDP_BUFFER_SIZE = 1464;
+
 // PacketHeader is a header sent with all packets transmitted
 struct PacketHeader {
     uint16_t m_packetFormat;           // 2020

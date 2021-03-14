@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #endif
 
+#include "f1telem/Types.hpp"
+
 using namespace F1Telem;
 
 UDPReader::UDPReader(const int port) {
